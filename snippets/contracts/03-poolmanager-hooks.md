@@ -1,6 +1,6 @@
 # Snippet — v4-style PoolManager, Swap Loop & Creator Fee Hook
 
-> Excerpts from `PPHatchSwapApp/PoolManager/Base.sol`,
+> Excerpts from `PoPoApp/PoolManager/Base.sol`,
 > `PoolManager/HookDispatcher.sol`, `hooks/CreatorFeeHook.sol`.
 > Purpose-built against the internal ERC-6909 ledger (not an external-AMM fork).
 

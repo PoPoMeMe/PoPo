@@ -1,6 +1,6 @@
 # Snippet — Two-Level Referrals with Frozen Gold Tiers
 
-> Excerpt from `PPHatchSwapApp/Referral/Base.sol`.
+> Excerpt from `PoPoApp/Referral/Base.sol`.
 > Growth mechanic funded exclusively from the **platform fee**, with tier rates
 > snapshotted at binding time.
 

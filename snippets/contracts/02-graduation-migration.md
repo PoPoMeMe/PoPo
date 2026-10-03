@@ -1,6 +1,6 @@
 # Snippet — Graduation: Curve → Concentrated Liquidity
 
-> Excerpt from `PPHatchSwapApp/Migration/Base.sol`.
+> Excerpt from `PoPoApp/Migration/Base.sol`.
 > Permissionless `migrate(tokenId)`: anyone can trigger it once the curve is
 > complete. No router, no LP tokens, no settle transfers.
 

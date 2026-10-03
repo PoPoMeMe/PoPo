@@ -1,6 +1,6 @@
 # Snippet — Paid Episodes & Daily Permissionless Buyback-and-Burn
 
-> Excerpts from `PPHatchSwapApp/Episode/Base.sol` and
+> Excerpts from `PoPoApp/Episode/Base.sol` and
 > `Episode/EpisodeBuybackRouter.sol`.
 > Content monetization whose revenue stream is mechanically routed back into
 > the creator coin's price/supply.

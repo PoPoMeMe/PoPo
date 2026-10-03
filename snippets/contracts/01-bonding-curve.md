@@ -1,6 +1,6 @@
 # Snippet — Bonding Curve: pricing, buy & sell
 
-> Excerpt from `PPHatchSwapApp/PPHatchSwap/Base.sol` (internal helpers).
+> Excerpt from `PoPoApp/PPHatchSwap/Base.sol` (internal helpers).
 > Boilerplate, events and storage declarations omitted.
 
 ## Why it matters

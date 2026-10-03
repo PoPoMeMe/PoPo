@@ -1,6 +1,6 @@
 # Snippet — ERC-6909 Vault: One Internal Ledger for Every Asset
 
-> Excerpt from `PPHatchSwapApp/Vault/Base.sol` + the shared `ERC6909` facet.
+> Excerpt from `PoPoApp/Vault/Base.sol` + the shared `ERC6909` facet.
 > The Vault bridges whitelisted ERC20s (the $P underwriting) and internal
 > multi-token ids; every launched meme coin is *also* just an id minted on this
 > same ledger.

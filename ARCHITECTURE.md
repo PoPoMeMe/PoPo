@@ -27,7 +27,7 @@ Diamond (single address, AppStorage)
 │   ├── Pausable / Ownable / DiamondCut / DiamondLoupe
 │
 └── application diamonds (facets mounted on the same pattern)
-    ├── PPHatchSwapApp
+    ├── PoPoApp
     │   ├── PPHatchSwap     create / buy / sell on the bonding curve
     │   ├── Migration       curve → concentrated-liquidity graduation
     │   ├── PoolManager     v4-style pools, ticks, flash accounting, hooks
