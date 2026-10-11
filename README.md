@@ -24,29 +24,19 @@ Each snippet is a short, self-contained excerpt of production code (comments
 kept, surrounding boilerplate removed) plus a "why it matters" note.
 
 ```
-hackathon/
+.
 ├── README.md                     # this file — pitch + architecture + demo script
 ├── ARCHITECTURE.md               # deep dive of every on/off-chain component
 ├── TECHNICAL-HIGHLIGHTS.md       # the 7 hardest engineering problems, solved
 ├── DEMO-SCRIPT.md                # 5-minute live demo flow
-├── snippets/
+├── snippets/                     # curated production-code excerpts
 │   ├── contracts/                # Solidity excerpts (real code, trimmed)
-│   │   ├── 01-bonding-curve.md
-│   │   ├── 02-graduation-migration.md
-│   │   ├── 03-poolmanager-hooks.md
-│   │   ├── 04-vault-erc6909.md
-│   │   ├── 05-referral.md
-│   │   ├── 06-episodes-buyback.md
-│   │   ├── 07-prediction-market.md
-│   │   └── 08-diamond-access-control.md
 │   └── app/                      # TypeScript / React excerpts
-│       ├── 01-eip712-wallet-auth.md
-│       ├── 02-privy-embedded-only.md
-│       ├── 03-multichain-routing.md
-│       ├── 04-onchain-indexer.md
-│       └── 05-p2p-video.md
-└── diagrams/
-    └── architecture.md           # mermaid diagrams (render on GitHub/markdown)
+├── diagrams/architecture.md      # mermaid diagrams (render on GitHub/markdown)
+├── bounty-submissions/           # Monad Metropolis bounty writeups (Privy/Envio/Alchemy/MetaMask)
+├── envio-indexer/                # Envio HyperIndex v2 indexer for Monad testnet (real, runnable)
+├── metamask-agent-plugin/        # `mm popo …` Agent Wallet plugin (8 commands, real on-chain calls)
+└── docs/                         # Monad deployment facts + bounty execution plan
 ```
 
 ---
@@ -91,9 +81,18 @@ authorized by an EIP-712 signature the function verifies with `ecrecover`
 
 **Media** — Supabase Storage + Service-Worker/WebRTC P2P CDN offload.
 
-**Networks** — Multi-chain by design (URL-routed): X Layer mainnet/testnet and a
-local Hardhat node, with the read path and write path explicitly de-synchronized
-to survive wallet chain-switch lag.
+**Networks** — Multi-chain by design (URL-routed): the same unforked codebase is
+deployed across X Layer mainnet, Sei mainnet/testnet, Mantle Sepolia,
+Robinhood Chain testnet, Arc testnet and **Monad Testnet (chainId 10143)**, plus a
+local Hardhat node. The read path and write path are explicitly de-synchronized to
+survive wallet chain-switch lag.
+
+> **Monad Testnet deployment (2026-12-08):** the full PoPoApp Diamond — all 19
+> facets, `0xa08e66FD7f19C22Fe44928518DFe6A867B0E4c07` — plus USDP/PPT/PFT,
+> Create2Deployer, CreatorFeeHookDefault and EpisodeBuybackRouter are live and
+> verified over public RPC (`facets()` = 19, 14,000-$P graduation threshold,
+> quoteId = 1, ops wallet ROLE_4/90). Address table, verification commands and
+> reproduce steps: [`docs/2026-12-08-monad-testnet-deployment.md`](./docs/2026-12-08-monad-testnet-deployment.md).
 
 ---
 
@@ -208,7 +207,24 @@ More: [`TECHNICAL-HIGHLIGHTS.md`](./TECHNICAL-HIGHLIGHTS.md).
 
 ---
 
-## 7. 5-minute demo
+## 7. Monad Metropolis bounty artifacts
+
+Built specifically for the Monad hackathon (execution status:
+[`bounty-submissions/README.md`](./bounty-submissions/README.md), full plan:
+[`docs/2026-10-11-monad-metropolis-bounty-plan.md`](./docs/2026-10-11-monad-metropolis-bounty-plan.md)):
+
+| Artifact | What it is |
+| --- | --- |
+| [`envio-indexer/`](./envio-indexer/) | **Envio HyperIndex v2** real-time indexer for PoPo.meme on Monad testnet: 8 events (Hatch `TokenCreated`/`Buy`/`Sell`/`BondingCurveComplete` + prediction `Buy`/`Sell`/`BuyBatch`/`SellBatch`) → 7 typed entities, GraphQL/REST API. Both facets share one Diamond address. Runnable (`npm i && envio dev`). |
+| [`metamask-agent-plugin/`](./metamask-agent-plugin/) | **MetaMask Agent Wallet** plugin `mm-plugin-popo` with 8 `mm popo …` commands — quote/trade/markets/market/position/predict/vault/deposit — wired to the Monad Diamond with real bonding-curve math and typed contract calls. |
+| [`bounty-submissions/`](./bounty-submissions/) | Submission writeups: Privy (P0, embedded-wallet-only signing), Envio, Alchemy Supernode/Enhanced APIs, MetaMask Agent Wallet. |
+
+A live prediction market was also opened and smoke-tested on-chain during the
+event (market digest `0x7fd5…3e52`, YES/NO 52/53).
+
+---
+
+## 8. 5-minute demo
 
 See [`DEMO-SCRIPT.md`](./DEMO-SCRIPT.md). Short path:
 
@@ -221,7 +237,7 @@ See [`DEMO-SCRIPT.md`](./DEMO-SCRIPT.md). Short path:
 
 ---
 
-## 8. Security considerations
+## 9. Security considerations
 
 - **Diamond + per-selector roles**: privileged functions are gated on chain via
   `AccessControl.canCall(account, selector)`; the client never decides.
@@ -238,7 +254,7 @@ See [`DEMO-SCRIPT.md`](./DEMO-SCRIPT.md). Short path:
 - **Vesting**: creator reserve tokens are non-transferable through the curve
   until cliff/vest conditions after graduation.
 
-## 9. License note
+## 10. License note
 
 Snippets are excerpts of proprietary PoPo.meme code provided for hackathon
 review only. V4-style math libraries (`FullMath`, `SqrtPriceMath`, `SwapMath`,

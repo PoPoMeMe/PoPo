@@ -1,0 +1,101 @@
+# PoPo.meme analytics schema (Monad testnet, chainId 10143).
+#
+# All $P (USDP) amounts are stored RAW (18 decimals) as BigInt to avoid float
+# drift; the presentation layer divides by 1e18. Prediction-market trade rows
+# carry an explicit `venue` so the same trader entity links to both surfaces.
+
+"An EOA / smart wallet that trades on PoPo.meme (Hatch and/or prediction)."
+type Trader {
+  id: ID!
+  address: String!
+  firstSeenBlock: Int!
+  totalSpentP: BigInt!
+  totalReceivedP: BigInt!
+  hatchTrades: Int!
+  predictionTrades: Int!
+}
+
+"A meme coin launched on the Hatch bonding curve."
+type Memecoin {
+  id: ID!
+  tokenId: BigInt! @index
+  name: String!
+  symbol: String!
+  uri: String!
+  creator: String! @index
+  createdAtBlock: Int!
+  graduated: Boolean!
+  reservedAmount: BigInt!
+  cliffDays: BigInt!
+  vestDays: BigInt!
+  holders: Int!
+  tokenCirculating: BigInt!
+  buyVolumeP: BigInt!
+  sellVolumeP: BigInt!
+  feesP: BigInt!
+  tradeCount: Int!
+  lastPriceP: BigInt!
+}
+
+"A per-trader position in one Hatch meme coin (net token units held)."
+type MemecoinHolder {
+  id: ID!
+  trader: Trader! @index
+  token: Memecoin! @index
+  balance: BigInt!
+}
+
+"One Hatch buy or sell (fills Buy / Sell events)."
+type HatchTrade {
+  id: ID!
+  trader: Trader! @index
+  token: Memecoin! @index
+  side: String!
+  tokenAmount: BigInt!
+  quoteP: BigInt!
+  platformFeeP: BigInt!
+  creatorFeeP: BigInt!
+  blockNumber: Int!
+  transactionHash: String!
+  timestamp: BigInt!
+}
+
+"A YES/NO prediction market (tracked from first trade; digest is the id)."
+type PredictionMarket {
+  id: ID!
+  digest: String! @index
+  yesNftId: BigInt!
+  noNftId: BigInt!
+  yesSupply: BigInt!
+  noSupply: BigInt!
+  buyVolumeP: BigInt!
+  sellVolumeP: BigInt!
+  feesP: BigInt!
+  tradeCount: Int!
+}
+
+"A per-trader YES/NO position in a prediction market."
+type PredictionPosition {
+  id: ID!
+  trader: Trader! @index
+  market: PredictionMarket! @index
+  yesShares: BigInt!
+  noShares: BigInt!
+}
+
+"One prediction buy or sell (fills BuyBatch / SellBatch and single Buy/Sell)."
+type PredictionTrade {
+  id: ID!
+  trader: Trader! @index
+  market: PredictionMarket! @index
+  side: String!
+  outcome: String!
+  nftId: BigInt!
+  shares: BigInt!
+  quoteP: BigInt!
+  platformFeeP: BigInt!
+  targetSupply: BigInt!
+  blockNumber: Int!
+  transactionHash: String!
+  timestamp: BigInt!
+}

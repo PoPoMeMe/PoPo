@@ -6,3 +6,11 @@
 .vscode/
 .idea/
 *.swp
+
+# Node / build artifacts (bounty modules)
+node_modules/
+dist/
+generated/
+.env
+.envio/
+*.log

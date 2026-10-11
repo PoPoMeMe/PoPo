@@ -1,0 +1,133 @@
+{
+  "name": "mm-plugin-popo",
+  "version": "0.1.0",
+  "description": "PoPo.meme Agent Wallet plugin — trade meme coins (Hatch bonding curves) and YES/NO prediction shares on Monad testnet, every transaction routed through MetaMask Agent Wallet (MFA + policy enforced, no key handling).",
+  "license": "MIT",
+  "type": "module",
+  "keywords": [
+    "oclif-plugin",
+    "metamask",
+    "agent-wallet",
+    "monad",
+    "popo",
+    "prediction-market",
+    "meme-coins"
+  ],
+  "files": [
+    "dist",
+    "oclif.manifest.json",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json && oclif manifest",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepack": "tsc -p tsconfig.json && oclif manifest"
+  },
+  "oclif": {
+    "bin": "mm",
+    "commands": "./dist/commands",
+    "topicSeparator": " ",
+    "topics": {
+      "popo": {
+        "description": "PoPo.meme on Monad testnet — meme-coin trading (Hatch) and YES/NO prediction markets"
+      }
+    }
+  },
+  "mm": {
+    "schemaVersion": 1,
+    "minCliVersion": "^6.2.0",
+    "capabilities": [],
+    "commands": [
+      {
+        "id": "popo:markets",
+        "capabilities": [
+          "wallet-read"
+        ],
+        "dataAccess": [
+          "balances",
+          "accounts"
+        ]
+      },
+      {
+        "id": "popo:market",
+        "capabilities": [
+          "wallet-read"
+        ],
+        "dataAccess": [
+          "balances",
+          "accounts"
+        ]
+      },
+      {
+        "id": "popo:quote",
+        "capabilities": [
+          "wallet-read"
+        ],
+        "dataAccess": [
+          "balances"
+        ]
+      },
+      {
+        "id": "popo:vault",
+        "capabilities": [
+          "wallet-read"
+        ],
+        "dataAccess": [
+          "balances",
+          "accounts"
+        ]
+      },
+      {
+        "id": "popo:position",
+        "capabilities": [
+          "wallet-read"
+        ],
+        "dataAccess": [
+          "balances",
+          "accounts"
+        ]
+      },
+      {
+        "id": "popo:deposit",
+        "capabilities": [
+          "wallet-submit"
+        ],
+        "dataAccess": [
+          "balances",
+          "accounts"
+        ]
+      },
+      {
+        "id": "popo:predict",
+        "capabilities": [
+          "wallet-submit"
+        ],
+        "dataAccess": [
+          "balances",
+          "accounts"
+        ]
+      },
+      {
+        "id": "popo:trade",
+        "capabilities": [
+          "wallet-submit"
+        ],
+        "dataAccess": [
+          "balances",
+          "accounts"
+        ]
+      }
+    ]
+  },
+  "dependencies": {
+    "viem": "^2.21.0"
+  },
+  "peerDependencies": {
+    "@metamask/agent-wallet": "^6.2.0"
+  },
+  "devDependencies": {
+    "@metamask/agent-wallet": "^6.2.0",
+    "oclif": "^4",
+    "typescript": "^5"
+  }
+}

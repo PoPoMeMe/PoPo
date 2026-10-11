@@ -1,0 +1,81 @@
+# yaml-language-server: $schema=./node_modules/envio/evm.schema.json
+#
+# PoPo.meme HyperIndex indexer — Monad testnet (chainId 10143).
+#
+# One EIP-2535 Diamond hosts BOTH the Hatch bonding-curve facets and the
+# prediction-market facet, so both logical "contracts" below point at the SAME
+# on-chain address. They are split into two entries because the two facets emit
+# same-named events (Buy/Sell) with DIFFERENT parameter tuples (Hatch uses
+# uint256 tokenId; prediction uses bytes32 digest). Splitting them avoids any
+# overloaded-signature ambiguity and keeps the two handlers focused.
+#
+# Lifecycle events (CreateMarket/ApplyMarket/ToggleMarket/EndMarket/
+# FinalizeMarket/UpdateMarket) embed a full `Market` struct tuple and are
+# intentionally excluded: the analytics product (volume, liquidity, holders,
+# prediction order flow) derives entirely from the trade events, and market
+# metadata/status are read from the contract and Supabase.
+name: popomonad
+description: >-
+  Real-time index of PoPo.meme Hatch meme-coin trades and YES/NO prediction
+  market trades on Monad testnet, feeding a public GraphQL analytics API
+  (volume, liquidity, holders, prediction order flow).
+
+storage:
+  postgres:
+    column_name_format: snake_case
+
+field_selection:
+  transaction_fields:
+    - "hash"
+
+contracts:
+  # ---- Hatch bonding-curve meme coins ----
+  - name: Hatch
+    handler: src/EventHandlers/Hatch.ts
+    events:
+      - event: >-
+          TokenCreated(uint256 indexed tokenId, address indexed creator,
+                       string name, string symbol, string uri,
+                       uint256 reservedAmount, uint64 cliffDays, uint64 vestDays)
+      - event: >-
+          Buy(address indexed buyer, uint256 indexed tokenId,
+              uint256 tokenAmount, uint256 quoteCost,
+              uint256 platformFee, uint256 creatorFee)
+      - event: >-
+          Sell(address indexed seller, uint256 indexed tokenId,
+               uint256 tokenAmount, uint256 quoteOut,
+               uint256 platformFee, uint256 creatorFee)
+      - event: "BondingCurveComplete(uint256 indexed tokenId, uint256 realQuoteReserves)"
+
+  # ---- Prediction-market YES/NO shares ----
+  - name: PredictionMarket
+    handler: src/EventHandlers/PredictionMarket.ts
+    events:
+      - event: >-
+          Buy(address indexed buyer, bytes32 indexed digest,
+              uint256 nftId, uint256 targetSupply,
+              uint256 price, uint256 platformFee)
+      - event: >-
+          Sell(address indexed seller, bytes32 indexed digest,
+               uint256 nftId, uint256 targetSupply, uint256 price)
+      - event: >-
+          BuyBatch(address indexed buyer, bytes32 indexed digest,
+                   uint256 nftId, uint256 amount, uint256 targetSupply,
+                   uint256 totalPrice, uint256 platformFee)
+      - event: >-
+          SellBatch(address indexed seller, bytes32 indexed digest,
+                    uint256 nftId, uint256 amount, uint256 targetSupply,
+                    uint256 totalOut)
+
+chains:
+  - id: 10143
+    start_block: 70016287 # PoPoApp Diamond deployment block on Monad testnet
+    rpc:
+      url: https://testnet-rpc.monad.xyz
+    contracts:
+      - name: Hatch
+        address:
+          - "0xa08e66FD7f19C22Fe44928518DFe6A867B0E4c07"
+      - name: PredictionMarket
+        address:
+          - "0xa08e66FD7f19C22Fe44928518DFe6A867B0E4c07"
