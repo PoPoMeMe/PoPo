@@ -8,13 +8,13 @@
 >
 > 🌐 Product brand: **PoPo.meme**
 
-**📂 阅读方式：每段默认折叠，只显示标题与一句话提要，点击标题即可展开完整说明。**
-评委可按兴趣直接跳到：技术亮点（§5）、功能清单（§6）、Monad bounty 产物（§7）、演示流程（§8）。
+**📂 How to read:** every section is collapsed by default — only the title and a one-line summary are shown. Click a title to expand its full contents.
+Judges can jump straight to: Technical highlights (§5), Feature checklist (§6), Monad bounty artifacts (§7), Demo flow (§8).
 
 ---
 
 <details>
-<summary><strong>1. What this folder is</strong> — judge pack 内容与目录结构</summary>
+<summary><strong>1. What this folder is</strong> — what the judge pack contains and the repo layout</summary>
 
 A **judge-facing excerpt pack**: it explains the architecture and shows the
 hard/interesting parts of the code as curated snippets. It is **not** the full
@@ -46,7 +46,7 @@ kept, surrounding boilerplate removed) plus a "why it matters" note.
 </details>
 
 <details>
-<summary><strong>2. The product in 30 seconds</strong> — 问题 / 方案 / 受众 / 壁垒 + 创作者经济飞轮</summary>
+<summary><strong>2. The product in 30 seconds</strong> — problem / solution / audience / moat + creator-economy flywheel</summary>
 
 | | |
 |---|---|
@@ -74,7 +74,7 @@ fan buys episode access ($P)
 </details>
 
 <details>
-<summary><strong>3. Tech stack</strong> — Solidity/Diamond · React 19/viem/Privy · Supabase · 多链（含 Monad testnet）</summary>
+<summary><strong>3. Tech stack</strong> — Solidity/Diamond · React 19/viem/Privy · Supabase · multi-chain (incl. Monad testnet)</summary>
 
 **Smart contracts** — Solidity `0.8.20`, Hardhat, EIP-2535 Diamond pattern.
 
@@ -103,7 +103,7 @@ survive wallet chain-switch lag.
 </details>
 
 <details>
-<summary><strong>4. Architecture at a glance</strong> — 浏览器 / Edge / Diamond 全链路架构图</summary>
+<summary><strong>4. Architecture at a glance</strong> — end-to-end diagram: browser / edge / Diamond</summary>
 
 ```
 ┌──────────────────────────── Browser (React 19 + viem 2) ───────────────────────────┐
@@ -133,7 +133,7 @@ Diagrams: [`diagrams/architecture.md`](./diagrams/architecture.md).
 </details>
 
 <details>
-<summary><strong>5. Technical highlights (judges: start here) ⭐</strong> — 7 个最难的工程问题及解法</summary>
+<summary><strong>5. Technical highlights (judges: start here) ⭐</strong> — the 7 hardest engineering problems, solved</summary>
 
 1. **Bonding-curve → CLM migration in one contract.** After the curve
    completes, the same Diamond initializes a v4-style pool, derives the starting
@@ -176,7 +176,7 @@ More: [`TECHNICAL-HIGHLIGHTS.md`](./TECHNICAL-HIGHLIGHTS.md).
 </details>
 
 <details>
-<summary><strong>6. Feature checklist</strong> — 发射/交易 · AMM · 创作者经济 · 增长 · 预测市场 · 基础设施</summary>
+<summary><strong>6. Feature checklist</strong> — launch/trading · AMM · creator economy · growth · prediction · infra</summary>
 
 **Launch & trade (PPHatchSwap)**
 - [x] Permissionless coin creation with on-chain creation fee, metadata, 18-decimals
@@ -217,7 +217,7 @@ More: [`TECHNICAL-HIGHLIGHTS.md`](./TECHNICAL-HIGHLIGHTS.md).
 </details>
 
 <details>
-<summary><strong>7. Monad Metropolis bounty artifacts</strong> — Envio 索引器 · MetaMask Agent 插件 · Bounty 文案 · 链上预测市场</summary>
+<summary><strong>7. Monad Metropolis bounty artifacts</strong> — Envio indexer · MetaMask Agent plugin · bounty writeups · live on-chain market</summary>
 
 Built specifically for the Monad hackathon (execution status:
 [`bounty-submissions/README.md`](./bounty-submissions/README.md), full plan:
@@ -235,7 +235,7 @@ event (market digest `0x7fd5…3e52`, YES/NO 52/53).
 </details>
 
 <details>
-<summary><strong>8. 5-minute demo</strong> — 登录 → 发币 → 交易 → 毕业 → 付费剧集/回购 → 预测市场</summary>
+<summary><strong>8. 5-minute demo</strong> — login → create coin → trade → graduate → paid episode/buyback → prediction market</summary>
 
 See [`DEMO-SCRIPT.md`](./DEMO-SCRIPT.md). Short path:
 
@@ -249,7 +249,7 @@ See [`DEMO-SCRIPT.md`](./DEMO-SCRIPT.md). Short path:
 </details>
 
 <details>
-<summary><strong>9. Security considerations</strong> — 链上角色门控 · EIP-712 验签 · 回调鉴权 · 滑点 · 资金完整性 · 归属</summary>
+<summary><strong>9. Security considerations</strong> — on-chain role gating · EIP-712 verification · callback auth · slippage · fund integrity · vesting</summary>
 
 - **Diamond + per-selector roles**: privileged functions are gated on chain via
   `AccessControl.canCall(account, selector)`; the client never decides.
@@ -269,7 +269,7 @@ See [`DEMO-SCRIPT.md`](./DEMO-SCRIPT.md). Short path:
 </details>
 
 <details>
-<summary><strong>10. License note</strong> — 代码摘录用途与 v3/v4 数学库出处</summary>
+<summary><strong>10. License note</strong> — excerpt usage terms and provenance of v3/v4 math libraries</summary>
 
 Snippets are excerpts of proprietary PoPo.meme code provided for hackathon
 review only. V4-style math libraries (`FullMath`, `SqrtPriceMath`, `SwapMath`,
