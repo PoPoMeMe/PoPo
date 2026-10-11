@@ -17,8 +17,8 @@ PoPo.meme is a meme-coin launch + trading platform with an integrated
 > Every state-changing call is submitted through the Agent Wallet's
 > **`wallet-submit` capability** (`ctx.walletExecutor`). The plugin never
 > touches a private key: the host enforces MFA and the user's allow/policy
-> rules, in both BYOK and server-wallet mode. Read commands use the
-> authenticated host RPC (`wallet-read`).
+> rules, in both BYOK and server-wallet mode. Public market reads use direct
+> Monad RPC and need no login; wallet reads use `wallet-read`.
 
 ## Why it fits the bounty
 
@@ -41,37 +41,79 @@ PoPo.meme is a meme-coin launch + trading platform with an integrated
 | `mm popo quote hatch --token ID [--side buy\|sell] --amount A` | `wallet-read` | On-chain `previewBuy/previewSell` for a meme coin. |
 | `mm popo vault` | `wallet-read` | Raw ERC-20 `$P`, ERC-20 allowance, internal vault `$P` and vault allowance. |
 | `mm popo position [ref]` | `wallet-read` | Your YES/NO share balances across all markets or one. |
+| `mm popo faucet` | `wallet-read` + `wallet-submit` | Sign an Agent Wallet-approved EIP-712 PoPoAuth request to claim 1,000,000 testnet `$P`; the service hot wallet mints, so no MON gas is needed for this drip. |
 | `mm popo deposit <amount>` | `wallet-submit` | ERC-20 approve (once) → deposit into vault → one-time ERC-6909 trading approve. |
-| `mm popo predict <buy\|sell> <ref> <yes\|no> <shares>` | `wallet-submit` | Buy/sell YES/NO shares; auto-funds the vault on buys (disable with `--no-auto-fund`). |
-| `mm popo trade <buy\|sell> <tokenId> <amount>` | `wallet-submit` | Buy/sell a Hatch meme coin with slippage protection (`--slippage-bps`, default 100). |
+| `mm popo predict --side buy\|sell --market <ref> --outcome yes\|no --amount <shares>` | `wallet-submit` | Buy/sell YES/NO shares; auto-funds the vault on buys (disable with `--no-auto-fund`). |
+| `mm popo trade --side buy\|sell --token <id> --amount <amount>` | `wallet-submit` | Buy/sell a Hatch meme coin with slippage protection (`--slippage-bps`, default 100). |
 
 All commands support `--json` for machine/agent consumption.
 
 ## Install (beta)
 
-Requires the Agent Wallet CLI with experimental plugins enabled:
+Requires Node ≥ 22.18 / npm ≥ 10 and the Agent Wallet CLI `mm` (this plugin is
+built and verified against `@metamask/agent-wallet` **7.1.0**):
 
 ```bash
+# 1) Install the CLI globally
+npm install -g @metamask/agent-wallet@latest   # provides the `mm` binary
+mm --version
+
+# 2) Enable the (still beta) plugin feature
 mm config set experimentalPlugins true
-mm config set experimentalAllowUnverifiedInstalls true
+mm config set experimentalAllowUnverifiedInstalls true   # allow file: installs
 
+# 3) Build + install this plugin FROM ITS DIRECTORY (not a tarball — the CLI
+#    reads package.json#mm from the directory to persist capability grants)
+cd hackathon/metamask-agent-plugin
 npm install
+npm run link-host-sdk   # force PluginCommand identity to match global mm
 npm run build
-
 mm plugins install "file:$PWD" --accept-permissions
 mm popo --help
 ```
 
-Link your Monad-testnet wallet (`mm wallet …`) and make sure Monad testnet
-(`10143`) is the active network. Get test `$P` and gas from the PoPo faucet,
-then:
+### Known 7.1.0 quirks (already handled here)
+
+1. **`window.addEventListener is not a function`** — the CLI's bundled web3auth
+   bridge aliases `globalThis.window = globalThis` under plain Node, then calls
+   `window.addEventListener`. Every command imports `src/lib/node-compat.ts`
+   first, which installs no-op event methods, so no wrapper/`NODE_OPTIONS` is
+   needed.
+2. **`Plugin command … must extend PluginCommand`** — caused by two physical
+   copies of the SDK. Keep `@metamask/agent-wallet` a **peer/dev dependency**
+   resolving to the SAME install the CLI runs. If a nested copy sneaks in,
+   point it at the global one:
+   ```bash
+   G=$(dirname "$(dirname "$(which mm)")")/lib/node_modules/@metamask/agent-wallet
+   ln -sfn "$G" node_modules/@metamask/agent-wallet
+   ```
+
+### Read vs write commands
+
+- **Public reads need no login**: `popo markets`, `popo market`, `popo quote`
+  use a direct viem client over the public Monad RPC list (override with
+  `POPO_MONAD_RPC_URL`, e.g. an Alchemy endpoint) — the host gateway RPC would
+  otherwise demand a signed-in project id.
+- **Wallet commands need auth**: `popo vault`, `popo position`, `popo faucet`,
+   `popo deposit`, `popo predict`, `popo trade` run `mm login` (QR/browser/token)
+   or use a BYOK wallet from `mm wallet`, on Monad testnet (`10143`). Run
+   `mm popo faucet` for test `$P`; MON gas is still required for deposit/predict
+   and comes from https://faucet.monad.xyz.
 
 ```bash
-mm popo markets                       # see the live markets
+# public (no login)
+mm popo markets
+mm popo market 0
+mm popo quote --kind predict --market 0 --outcome yes --side buy --amount 2
+mm popo quote --kind hatch --token <hatchTokenId> --side buy --amount 10
+
+# requires mm login / wallet
+mm popo faucet                        # Agent Wallet EIP-712 sign; receive 1,000,000 test $P
+# after receiving MON gas from https://faucet.monad.xyz:
 mm popo deposit 25                    # fund the trading vault
-mm popo predict buy 0 yes 5           # buy 5 YES shares through Agent Wallet
-mm popo position 0                    # check your shares
-mm popo predict sell 0 yes 5          # sell them back
+mm popo predict --side buy --market 0 --outcome yes --amount 5
+mm popo position --market 0          # check your shares
+mm popo predict --side sell --market 0 --outcome yes --amount 5
 ```
 
 ## How settlement works
@@ -100,9 +142,10 @@ src/commands/popo/    one file per `mm popo …` command
 
 ## Security model
 
-- Capabilities are declared per command in `package.json#mm.commands`; read
-  commands request `wallet-read`, only the three mutating commands request
-  `wallet-submit`.
+- Capabilities are declared per command in `package.json#mm.commands`; public
+  market reads request no wallet capability, wallet reads request
+  `wallet-read`, and mutations request `wallet-submit`. Faucet requires both
+  because it reads the selected address then asks for a signature.
 - The plugin has **no network code of its own for signing** and no key access;
   reads go through the host public client and writes through the executor.
 - Slippage bounds are enforced on-chain (`minTokensOut` / `minQuoteOut`);

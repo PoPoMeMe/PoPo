@@ -1,7 +1,8 @@
+import "../../lib/node-compat.js";
 import { type CommandIO, PluginCommand } from "@metamask/agent-wallet/plugin";
 import { formatEther } from "viem";
 import { CONTRACTS, MARKET_ABI } from "../../lib/contracts.js";
-import { activeAddress, monadClient } from "../../lib/sdk.js";
+import { monadClient, optionalAddress } from "../../lib/sdk.js";
 
 type OnchainMarket = {
   digest: `0x${string}`;
@@ -49,7 +50,7 @@ type MarketsResult = {
   chainId: number;
   diamond: string;
   total: number;
-  activeWallet: string;
+  activeWallet: string | null;
   markets: MarketRow[];
 };
 
@@ -66,12 +67,14 @@ export default class PoPoMarketsCommand extends PluginCommand<MarketsResult> {
     "<%= config.bin %> popo markets --json",
   ];
 
-  static override requiresAuth = true;
+  // Pure on-chain read: works unauthenticated (no wallet required).
+  static override requiresAuth = false;
+  static override requiresInit = false;
 
   protected readonly pluginCommandId = "popo:markets";
 
   async execute(_io: CommandIO): Promise<MarketsResult> {
-    const wallet = activeAddress(this);
+    const wallet = optionalAddress(this);
     const client = monadClient(this);
 
     const total = (await client.readContract({

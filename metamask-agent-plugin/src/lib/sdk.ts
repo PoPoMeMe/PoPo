@@ -1,5 +1,5 @@
 import { type CommandIO, PluginCommand } from "@metamask/agent-wallet/plugin";
-import { encodeFunctionData, type Abi, type Address } from "viem";
+import { createPublicClient, encodeFunctionData, fallback, http, type Abi, type Address, type PublicClient } from "viem";
 import {
   CONTRACTS,
   ERC20_ABI,
@@ -11,15 +11,62 @@ import {
 
 /** Resolve the active EVM wallet address from the Agent Wallet state. */
 export function activeAddress(cmd: PluginCommand<unknown, unknown>): Address {
-  const state = cmd.ctx.walletStateManager.read();
-  const addr = [...state.byokWallets, ...state.remoteWallets][0]?.address;
-  if (!addr) throw new Error("No active Agent Wallet found. Run `mm wallet` setup first.");
-  return addr as Address;
+  const addr = optionalAddress(cmd);
+  if (!addr) throw new Error("No active Agent Wallet found. Run `mm login` / `mm wallet` setup first.");
+  return addr;
 }
 
-/** Authenticated viem public client for Monad testnet (host-managed RPC). */
-export function monadClient(cmd: PluginCommand<unknown, unknown>) {
-  return cmd.ctx.publicClient(CONTRACTS.chainId);
+/**
+ * Best-effort active address for read-only commands that work without a wallet.
+ * Returns null instead of throwing when no Agent Wallet is configured.
+ */
+export function optionalAddress(cmd: PluginCommand<unknown, unknown>): Address | null {
+  try {
+    const state = cmd.ctx.walletStateManager.read() as {
+      selectedWallet?: {
+        address?: string;
+        ref?: { address?: string; _?: unknown };
+      };
+      remoteWallets?: { address?: string }[];
+      byokWallets?: { address?: string }[];
+    };
+
+    const selectedRef = state.selectedWallet?.ref;
+    const selectedAddress =
+      state.selectedWallet?.address ??
+      (selectedRef && !Array.isArray(selectedRef) ? selectedRef.address : undefined);
+
+    const addr =
+      selectedAddress ??
+      state.remoteWallets?.find((w) => w.address)?.address ??
+      state.byokWallets?.find((w) => w.address)?.address;
+    cmd.ctx.logger?.debug?.(
+      `popo active wallet state: selected=${JSON.stringify(state.selectedWallet ?? null)} remote=${state.remoteWallets?.length ?? 0} byok=${state.byokWallets?.length ?? 0} resolved=${addr ?? "null"}`,
+    );
+    return (addr as Address | undefined) ?? null;
+  } catch (error) {
+    cmd.ctx.logger?.debug?.(`popo active wallet read failed: ${String(error)}`);
+    return null;
+  }
+}
+
+/**
+ * Read-only viem client for Monad testnet. We deliberately do NOT use
+ * `cmd.ctx.publicClient(...)` for reads: the host gateway RPC needs a logged-in
+ * project id, while public market data should be reachable without login. Uses
+ * the public RPC list (Alchemy/custom via POPO_MONAD_RPC_URL) with failover.
+ * (The `cmd` arg is kept for API stability and a future authenticated path.)
+ */
+export function monadClient(_cmd?: PluginCommand<unknown, unknown>): PublicClient {
+  return createPublicClient({
+    chain: {
+      id: CONTRACTS.chainId,
+      name: "Monad Testnet",
+      nativeCurrency: { name: "Testnet MON Token", symbol: "MON", decimals: 18 },
+      rpcUrls: { default: { http: [...CONTRACTS.rpcUrls] } },
+    },
+    transport: fallback(CONTRACTS.rpcUrls.map((url) => http(url))),
+  }) as PublicClient;
 }
 
 export type AbiName = "erc20" | "vault" | "hatch" | "market";
@@ -57,6 +104,90 @@ export type SubmitOutcome = {
   explorer: string;
 };
 
+export type PoPoAuthTypedData = {
+  domain: { name: string; version: string; chainId: number };
+  types: {
+    EIP712Domain: readonly { name: string; type: string }[];
+    PoPoAuth: readonly { name: string; type: string }[];
+  };
+  primaryType: "PoPoAuth";
+  message: {
+    action: string;
+    wallet: Address;
+    timestamp: string;
+    payload: string;
+  };
+};
+
+/** Byte-identical to app/supabase/functions/_shared/auth.ts. */
+export function buildPoPoAuthTypedData(input: {
+  address: Address;
+  timestampMs: number;
+  payload: Record<string, unknown>;
+}): PoPoAuthTypedData {
+  return {
+    domain: {
+      name: "PoPo.meme",
+      version: "1",
+      chainId: CONTRACTS.chainId,
+    },
+    types: {
+      EIP712Domain: [
+        { name: "name", type: "string" },
+        { name: "version", type: "string" },
+        { name: "chainId", type: "uint256" },
+      ],
+      PoPoAuth: [
+        { name: "action", type: "string" },
+        { name: "wallet", type: "address" },
+        { name: "timestamp", type: "uint256" },
+        { name: "payload", type: "string" },
+      ],
+    },
+    primaryType: "PoPoAuth",
+    message: {
+      action: "testnet-faucet-claim",
+      wallet: input.address,
+      timestamp: String(input.timestampMs),
+      payload: JSON.stringify(input.payload, Object.keys(input.payload).sort()),
+    },
+  };
+}
+
+/** Ask Agent Wallet to sign an off-chain EIP-712 authorization. */
+export async function signThroughAgentWallet(
+  cmd: PluginCommand<unknown, unknown>,
+  io: CommandIO,
+  source: string,
+  typedData: PoPoAuthTypedData,
+  intent: { title: string; description: string },
+): Promise<{ signature: string; status: string }> {
+  const executor = await cmd.ctx.walletExecutor(io, source);
+  const result = await executor(
+    {
+      // The Agent SDK's enum value is the literal "typed-data".
+      kind: "typed-data" as const,
+      chainId: CONTRACTS.chainId,
+      typedData,
+      intent,
+      wait: true,
+    },
+    { signal: io.signal },
+  );
+
+  if (result.kind !== "signature" || !result.signature) {
+    throw new Error(
+      `Typed-data signature not completed (status=${result.status}${
+        (result as { failureDescription?: string }).failureDescription
+          ? `, ${(result as { failureDescription?: string }).failureDescription}`
+          : ""
+      }). Approve the Agent Wallet request and retry.`,
+    );
+  }
+
+  return { signature: result.signature, status: result.status };
+}
+
 /**
  * Submit ONE transaction through the MetaMask Agent Wallet executor.
  *
@@ -73,14 +204,51 @@ export async function submitThroughAgentWallet(
   intent: { title: string; description: string },
 ): Promise<SubmitOutcome> {
   const executor = await cmd.ctx.walletExecutor(io, source);
+  const client = monadClient(cmd);
+  const from = activeAddress(cmd);
+
+  // Agent Wallet's GasFeeController calls its hosted gas API, which rejects
+  // Monad testnet (10143) with "Invalid chainId" before signing. When the
+  // transaction carries a legacy gasPrice the controller skips that remote
+  // estimate, so we source both gasPrice and gas directly from the public RPC.
+  // Agent Wallet remote signing is EIP-1559 only: supply BOTH max fees so the
+  // host skips its hosted GasFeeController (which rejects chainId 10143). Base
+  // fee comes from the latest block; tip defaults to a small fixed value.
+  const block = await client.getBlock();
+  const baseFee = block.baseFeePerGas ?? (await client.getGasPrice());
+  const maxPriorityFeePerGas = 2_000_000_000n; // 2 gwei tip
+  const maxFeePerGas = baseFee * 2n + maxPriorityFeePerGas;
+  let gas: bigint;
+  try {
+    const estimated = await client.estimateGas({
+      account: from,
+      to: tx.to,
+      data: tx.data,
+      value: 0n,
+      maxFeePerGas,
+      maxPriorityFeePerGas,
+    });
+    gas = (estimated * 13n) / 10n; // +30% buffer for batch/approve variance
+  } catch (error) {
+    cmd.ctx.logger?.warn?.(`popo gas estimation failed, using fallback: ${String(error)}`);
+    gas = 1_000_000n;
+  }
+
   const result = await executor(
     {
       kind: "transaction",
       chainId: CONTRACTS.chainId,
       transaction: {
+        from,
         to: tx.to,
         data: tx.data,
         value: 0n,
+        maxFeePerGas,
+        maxPriorityFeePerGas,
+        // MetaMask TxController keys the limit as `gas`; include gasLimit too
+        // in case the SDK normalizes either shape.
+        gas,
+        gasLimit: gas,
       },
       intent,
     },

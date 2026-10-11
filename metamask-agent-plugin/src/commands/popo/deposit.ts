@@ -1,3 +1,4 @@
+import "../../lib/node-compat.js";
 import {
   type CommandIO,
   InputFieldType,
@@ -120,7 +121,7 @@ export default class PoPoDepositCommand extends PluginCommand<DepositResult> {
         address: diamond,
         abi: VAULT_ABI,
         functionName: "allowance",
-        args: [wallet, diamond, CONTRACTS.quoteTokenId],
+        args: [CONTRACTS.quoteTokenId, wallet, diamond],
       })) as bigint;
       if (vaultAllowance < amount) {
         const r = await submitThroughAgentWallet(

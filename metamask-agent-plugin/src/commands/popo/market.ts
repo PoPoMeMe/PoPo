@@ -1,3 +1,4 @@
+import "../../lib/node-compat.js";
 import {
   type CommandIO,
   InputFieldType,
@@ -8,7 +9,7 @@ import {
 } from "@metamask/agent-wallet/plugin";
 import { formatEther, isHex } from "viem";
 import { CONTRACTS, MARKET_ABI } from "../../lib/contracts.js";
-import { activeAddress, monadClient } from "../../lib/sdk.js";
+import { monadClient } from "../../lib/sdk.js";
 
 type MarketDetail = [
   {
@@ -75,7 +76,9 @@ export default class PoPoMarketCommand extends PluginCommand<MarketDetailResult>
     "<%= config.bin %> popo market 0x7fd5…3e52",
     "<%= config.bin %> popo market 0 --json",
   ];
-  static override requiresAuth = true;
+  // Pure on-chain read: works unauthenticated (no wallet required).
+  static override requiresAuth = false;
+  static override requiresInit = false;
   static override flags = schemaToFlags(inputs);
   static override args = schemaToArgs(inputs);
   protected readonly pluginCommandId = "popo:market";
@@ -83,7 +86,6 @@ export default class PoPoMarketCommand extends PluginCommand<MarketDetailResult>
   async execute(io: CommandIO): Promise<MarketDetailResult> {
     const { market: ref } = await io.resolveInputs(inputs);
     const client = monadClient(this);
-    activeAddress(this); // surface a clean error if no wallet is configured
 
     let digest: `0x${string}`;
     if (isHex(ref) && ref.length === 66) {

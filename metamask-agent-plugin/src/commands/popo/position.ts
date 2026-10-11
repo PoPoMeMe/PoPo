@@ -1,3 +1,4 @@
+import "../../lib/node-compat.js";
 import {
   type CommandIO,
   InputFieldType,
@@ -96,13 +97,13 @@ export default class PoPoPositionCommand extends PluginCommand<PositionResult> {
           address: CONTRACTS.diamond,
           abi: MARKET_ABI,
           functionName: "balanceOf",
-          args: [wallet, market.yesNftId],
+          args: [market.yesNftId, wallet],
         }) as Promise<bigint>,
         client.readContract({
           address: CONTRACTS.diamond,
           abi: MARKET_ABI,
           functionName: "balanceOf",
-          args: [wallet, market.noNftId],
+          args: [market.noNftId, wallet],
         }) as Promise<bigint>,
       ]);
 

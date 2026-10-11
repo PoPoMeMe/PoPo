@@ -23,6 +23,20 @@ export const CONTRACTS = {
   /** ERC-6909 internal quote token id used by the vault ($P). */
   quoteTokenId: 1n,
   explorer: "https://testnet.monadexplorer.com",
+  /** Existing PoPo testnet faucet Edge Function (mints $P server-side). */
+  faucetFunctionUrl:
+    "https://novxohcvvpoqcfkpsvcj.supabase.co/functions/v1/testnet-faucet-claim",
+  faucetAction: "testnet-faucet-claim",
+  /**
+   * Public read RPCs. Read-only commands use these directly (the Agent Wallet
+   * host's gateway RPC requires a logged-in project id, which a public market
+   * listing should not need). Write commands still go through walletExecutor.
+   * Override with POPO_MONAD_RPC_URL for a private/Alchemy endpoint.
+   */
+  rpcUrls: [
+    process.env.POPO_MONAD_RPC_URL ?? "https://testnet-rpc.monad.xyz",
+    "https://monad-testnet.drpc.org",
+  ],
 } as const;
 
 export function txUrl(hash: string): string {
@@ -60,8 +74,8 @@ export const VAULT_ABI = [
     name: "balanceOf",
     stateMutability: "view",
     inputs: [
-      { name: "owner", type: "address" },
       { name: "id", type: "uint256" },
+      { name: "owner", type: "address" },
     ],
     outputs: [{ name: "", type: "uint256" }],
   },
@@ -70,9 +84,9 @@ export const VAULT_ABI = [
     name: "allowance",
     stateMutability: "view",
     inputs: [
+      { name: "id", type: "uint256" },
       { name: "owner", type: "address" },
       { name: "spender", type: "address" },
-      { name: "id", type: "uint256" },
     ],
     outputs: [{ name: "", type: "uint256" }],
   },
@@ -258,8 +272,8 @@ export const MARKET_ABI = [
     name: "balanceOf",
     stateMutability: "view",
     inputs: [
-      { name: "owner", type: "address" },
       { name: "id", type: "uint256" },
+      { name: "owner", type: "address" },
     ],
     outputs: [{ name: "", type: "uint256" }],
   },

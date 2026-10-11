@@ -8,10 +8,13 @@ Team: **PoPo.meme** (`predpred`) ｜ Plan doc: `docs/2026-10-11-monad-metropolis
 | # | Bounty | Tier | Artifact | Status |
 | --- | --- | --- | --- | --- |
 | T7 | (track support) Prediction market on Monad | — | live market digest `0x7fd5…3e52`, YES/NO 52/53, smoke-tested | **shipped on-chain** |
-| T8 | **MetaMask Agent Wallet** — Best use of Agent Wallet | P1 $5k | `metamask-agent-plugin/` (`mm-plugin-popo`, 8 commands) | **built, builds clean**; needs `mm` beta install + video |
+| T8 | **MetaMask Agent Wallet** — Best use of Agent Wallet | P1 $5k | `metamask-agent-plugin/` (`mm-plugin-popo`, 8 commands) | **CLI 7.1.0 installed + plugin linked; read cmds verified live on Monad (27 markets)**; write cmds need your `mm login` + funds, then record |
 | T10 | **Envio HyperIndex** | P1 $5k | `envio-indexer/` (`popomonad`, 8 events → 7 entities) | **built, codegen + tsc clean**; needs `envio dev` (Postgres) + video |
 | P0 | **Privy** — beyond authentication | P0 $5k | `bounty-submissions/privy.md` | integration already in app; **needs only the ≤2min video + links** |
-| T11 | **Alchemy** — Supernode RPC + Enhanced token APIs | P1 $1k credits | `app/src/lib/alchemy.ts`, `app/src/hooks/use-alchemy-monad.ts`, wired in `main.tsx`; `bounty-submissions/alchemy.md` | **built & env-gated; add `VITE_ALCHEMY_API_KEY`, rebuild, demo** |
+| T11 | **Alchemy** — Supernode RPC + Enhanced token APIs | P1 $1k credits | `app/src/lib/alchemy.ts`, `app/src/hooks/use-alchemy-monad.ts`, wired in `main.tsx`; `bounty-submissions/alchemy.md` | **key verified live on Monad** (chainId `0x279f`, real balances/transfers); set key in Vercel + rebuild for prod |
+
+**Ready-to-paste kits:** `FORM-ANSWERS.md` (every bounty's exact form text +
+links), `VIDEO-SCRIPT.md` (per-second shot lists for all 6 clips).
 | — | submission copy | — | `metamask-agent-plugin.md`, `envio.md` in this folder | drafts ready, insert video/repo links |
 
 ## 🔑 Blocked on YOU (accounts / keys / actions)
@@ -21,10 +24,11 @@ Team: **PoPo.meme** (`predpred`) ｜ Plan doc: `docs/2026-10-11-monad-metropolis
 2. **Supabase management token 401** — run `supabase login` so the
    faucet/referral/billing edges can redeploy (`./supabase/deploy.sh`, new
    edges with `--no-verify-jwt`).
-3. **Alchemy key (P1 $1k credits)** — code is DONE and env-gated. Create a
-   free key at https://www.alchemy.com/monad, set `VITE_ALCHEMY_API_KEY` in
-   Vercel + `.env.local`, rebuild → Supernode becomes primary Monad RPC and the
-   wallet balance/activity Enhanced APIs activate. Then record the short demo.
+3. **Alchemy key (P1 $1k credits)** — code DONE, env-gated, and the testnet key
+   `VITE_ALCHEMY_API_KEY` is set in `app/.env.local` and **verified live** on
+   Monad (chainId/head match public RPC; Enhanced balance + transfers return
+   real data). Remaining: set the same var in **Vercel**, rebuild, and record
+   the short demo. Key is testnet-only per owner.
 4. **Nansen (P1 $5k)** — needs an API key (https://docs.nansen.ai) and Monad
    coverage confirmation; higher effort, do only if key available.
 5. **Perpl API (P1 $5k)** — it is a trading bot **on Perpl's own CLOB**, with
@@ -38,8 +42,18 @@ Team: **PoPo.meme** (`predpred`) ｜ Plan doc: `docs/2026-10-11-monad-metropolis
    bounty's required fields (the `requirements` list is captured in
    `bounty-submissions/*.md`).
 
+## Infrastructure status (re-verified 2026-10-11)
+
+- **Supabase token in `app/.env.local` works** (`SUPABASE_ACCESS_TOKEN`, project
+  `novxohcvvpoqcfkpsvcj` ACTIVE_HEALTHY). **54 edge functions are already
+  deployed**, all `verify_jwt=false`, including faucet/referral/billing/prediction.
+- **Monad faucet chain path is live:** hot wallet `0x911d…4ae57` holds
+  `hasRole(...,1)=true` (mint ROLE_1) on USDPApp `0xf8D4…C662`, 0.185 MON gas,
+  edge responds to chainId 10143 (reaches EIP-712 auth → 401 without signature,
+  not "chain unavailable"). No redeploy needed.
+
 ## Recommendation
 
 Hold the line: **track + Privy + Agent Wallet Plugin + Envio + Alchemy** is a
-strong, fully-built story (~$16k eligible) with no more credentials beyond the
-free Alchemy key. Community skipped. Skip Perpl/Nansen/Dynamic/Mera/Agora/KIMI.
+strong, fully-built story (~$16k eligible). Community skipped.
+Skip Perpl/Nansen/Dynamic/Mera/Agora/KIMI.

@@ -1,3 +1,4 @@
+import "../../lib/node-compat.js";
 import {
   type CommandIO,
   InputFieldType,
@@ -172,7 +173,7 @@ export default class PoPoTradeCommand extends PluginCommand<TradeResult> {
       address: diamond,
       abi: VAULT_ABI,
       functionName: "allowance",
-      args: [wallet, diamond, id],
+      args: [id, wallet, diamond],
     })) as bigint;
     if (allowance >= needed && allowance > 0n) return;
     await submitThroughAgentWallet(
@@ -199,7 +200,7 @@ export default class PoPoTradeCommand extends PluginCommand<TradeResult> {
       address: diamond,
       abi: VAULT_ABI,
       functionName: "balanceOf",
-      args: [wallet, CONTRACTS.quoteTokenId],
+      args: [CONTRACTS.quoteTokenId, wallet],
     })) as bigint;
     if (vaultBal >= need) return;
 

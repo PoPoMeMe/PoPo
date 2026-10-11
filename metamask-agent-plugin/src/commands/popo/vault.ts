@@ -1,3 +1,4 @@
+import "../../lib/node-compat.js";
 import { type CommandIO, PluginCommand } from "@metamask/agent-wallet/plugin";
 import { formatEther } from "viem";
 import { CONTRACTS, ERC20_ABI, VAULT_ABI } from "../../lib/contracts.js";
@@ -49,13 +50,13 @@ export default class PoPoVaultCommand extends PluginCommand<VaultResult> {
         address: diamond,
         abi: VAULT_ABI,
         functionName: "balanceOf",
-        args: [wallet, CONTRACTS.quoteTokenId],
+        args: [CONTRACTS.quoteTokenId, wallet],
       }) as Promise<bigint>,
       client.readContract({
         address: diamond,
         abi: VAULT_ABI,
         functionName: "allowance",
-        args: [wallet, diamond, CONTRACTS.quoteTokenId],
+        args: [CONTRACTS.quoteTokenId, wallet, diamond],
       }) as Promise<bigint>,
     ]);
 

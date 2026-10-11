@@ -1,3 +1,4 @@
+import "../../lib/node-compat.js";
 import {
   type CommandIO,
   InputFieldType,
@@ -164,7 +165,7 @@ export default class PoPoPredictCommand extends PluginCommand<PredictResult> {
       address: diamond,
       abi: VAULT_ABI,
       functionName: "balanceOf",
-      args: [wallet, CONTRACTS.quoteTokenId],
+      args: [CONTRACTS.quoteTokenId, wallet],
     })) as bigint;
 
     if (side === "buy") {
@@ -209,7 +210,7 @@ export default class PoPoPredictCommand extends PluginCommand<PredictResult> {
       address: diamond,
       abi: VAULT_ABI,
       functionName: "allowance",
-      args: [wallet, diamond, CONTRACTS.quoteTokenId],
+      args: [CONTRACTS.quoteTokenId, wallet, diamond],
     })) as bigint;
     if (allowance >= maxUint256 / 2n) return;
     await submitThroughAgentWallet(
@@ -239,7 +240,7 @@ export default class PoPoPredictCommand extends PluginCommand<PredictResult> {
       address: diamond,
       abi: VAULT_ABI,
       functionName: "balanceOf",
-      args: [wallet, CONTRACTS.quoteTokenId],
+      args: [CONTRACTS.quoteTokenId, wallet],
     })) as bigint;
     if (vaultBal >= need) return;
 

@@ -1,3 +1,4 @@
+import "../../lib/node-compat.js";
 import {
   type CommandIO,
   InputFieldType,
@@ -9,7 +10,7 @@ import {
 import { formatEther, isHex, parseEther } from "viem";
 import { CONTRACTS, HATCH_ABI, MARKET_ABI } from "../../lib/contracts.js";
 import { curveBuySum, curveSellSum, priceAt } from "../../lib/curve.js";
-import { activeAddress, monadClient } from "../../lib/sdk.js";
+import { monadClient } from "../../lib/sdk.js";
 
 const inputs = {
   kind: {
@@ -18,7 +19,6 @@ const inputs = {
     message: "What to quote",
     required: true,
     prompt: false,
-    index: 0,
     options: [
       { label: "YES/NO prediction shares", value: "predict" },
       { label: "Hatch meme coin", value: "hatch" },
@@ -30,7 +30,6 @@ const inputs = {
     message: "Prediction market index or 0x… digest (kind=predict)",
     required: false,
     prompt: false,
-    index: 1,
   },
   side: {
     type: InputFieldType.Select,
@@ -67,7 +66,6 @@ const inputs = {
     message: "Amount (shares for predict; $P spend for hatch buy / tokens for hatch sell)",
     required: true,
     prompt: false,
-    index: 2,
   },
 } satisfies InputSchema;
 
@@ -91,19 +89,22 @@ export default class PoPoQuoteCommand extends PluginCommand<QuoteResult> {
   static override description =
     "Quote a prediction YES/NO share purchase or a Hatch meme-coin trade without submitting a transaction.";
   static override examples = [
-    "<%= config.bin %> popo quote predict 0 --outcome yes --amount 5",
-    "<%= config.bin %> popo quote predict 0x7fd5…3e52 --side sell --outcome no --amount 2",
-    "<%= config.bin %> popo quote hatch --token 3 --side buy --amount 10",
+    "<%= config.bin %> popo quote --kind predict --market 0 --outcome yes --amount 5",
+    "<%= config.bin %> popo quote --kind predict --market 0x7fd5…3e52 --side sell --outcome no --amount 2",
+    "<%= config.bin %> popo quote --kind hatch --token 3 --side buy --amount 10",
   ];
-  static override requiresAuth = true;
+  // Pure quote/preview read: works unauthenticated (no wallet required). All
+  // inputs are flags (no positional args): a required arg cannot follow an
+  // optional positional arg in oclif, which these interleaved fields would do.
+  static override requiresAuth = false;
+  static override requiresInit = false;
   static override flags = schemaToFlags(inputs);
-  static override args = schemaToArgs(inputs);
+  static override args = {};
   protected readonly pluginCommandId = "popo:quote";
 
   async execute(io: CommandIO): Promise<QuoteResult> {
     const v = await io.resolveInputs(inputs);
     const client = monadClient(this);
-    activeAddress(this);
     const side = (v.side as string) ?? "buy";
 
     if (v.kind === "predict") {
