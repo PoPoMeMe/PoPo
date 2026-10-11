@@ -8,9 +8,13 @@
 >
 > 🌐 Product brand: **PoPo.meme**
 
+**📂 阅读方式：每段默认折叠，只显示标题与一句话提要，点击标题即可展开完整说明。**
+评委可按兴趣直接跳到：技术亮点（§5）、功能清单（§6）、Monad bounty 产物（§7）、演示流程（§8）。
+
 ---
 
-## 1. What this folder is
+<details>
+<summary><strong>1. What this folder is</strong> — judge pack 内容与目录结构</summary>
 
 A **judge-facing excerpt pack**: it explains the architecture and shows the
 hard/interesting parts of the code as curated snippets. It is **not** the full
@@ -39,9 +43,10 @@ kept, surrounding boilerplate removed) plus a "why it matters" note.
 └── docs/                         # Monad deployment facts + bounty execution plan
 ```
 
----
+</details>
 
-## 2. The product in 30 seconds
+<details>
+<summary><strong>2. The product in 30 seconds</strong> — 问题 / 方案 / 受众 / 壁垒 + 创作者经济飞轮</summary>
 
 | | |
 |---|---|
@@ -66,9 +71,10 @@ fan buys episode access ($P)
       reduced supply / price support ──► holders & creators win
 ```
 
----
+</details>
 
-## 3. Tech stack
+<details>
+<summary><strong>3. Tech stack</strong> — Solidity/Diamond · React 19/viem/Privy · Supabase · 多链（含 Monad testnet）</summary>
 
 **Smart contracts** — Solidity `0.8.20`, Hardhat, EIP-2535 Diamond pattern.
 
@@ -94,9 +100,10 @@ survive wallet chain-switch lag.
 > quoteId = 1, ops wallet ROLE_4/90). Address table, verification commands and
 > reproduce steps: [`docs/2026-12-08-monad-testnet-deployment.md`](./docs/2026-12-08-monad-testnet-deployment.md).
 
----
+</details>
 
-## 4. Architecture at a glance
+<details>
+<summary><strong>4. Architecture at a glance</strong> — 浏览器 / Edge / Diamond 全链路架构图</summary>
 
 ```
 ┌──────────────────────────── Browser (React 19 + viem 2) ───────────────────────────┐
@@ -112,7 +119,7 @@ survive wallet chain-switch lag.
 │        ▼                                      │  · PoolManager (v4)  │               │
 │  Postgres: threads, likes, replies,           │  · Vault ERC-6909    │               │
 │  trades index, holders, episodes meta,        │  · Migration         │               │
-│  applications (admin review)                  │  · Referral          │              
+│  applications (admin review)                  │  · Referral          │               │
 │                                               │  · Episodes+Burn     │               │
 │  P2P media layer (SW + WebRTC)                │  · Prediction Market │               │
 │  Supabase Storage ◄─ event-driven fallback ──►│  · AccessControl     │               │
@@ -123,9 +130,10 @@ survive wallet chain-switch lag.
 Full component breakdown: [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 Diagrams: [`diagrams/architecture.md`](./diagrams/architecture.md).
 
----
+</details>
 
-## 5. Technical highlights (judges: start here)
+<details>
+<summary><strong>5. Technical highlights (judges: start here) ⭐</strong> — 7 个最难的工程问题及解法</summary>
 
 1. **Bonding-curve → CLM migration in one contract.** After the curve
    completes, the same Diamond initializes a v4-style pool, derives the starting
@@ -165,9 +173,10 @@ Diagrams: [`diagrams/architecture.md`](./diagrams/architecture.md).
 
 More: [`TECHNICAL-HIGHLIGHTS.md`](./TECHNICAL-HIGHLIGHTS.md).
 
----
+</details>
 
-## 6. Feature checklist
+<details>
+<summary><strong>6. Feature checklist</strong> — 发射/交易 · AMM · 创作者经济 · 增长 · 预测市场 · 基础设施</summary>
 
 **Launch & trade (PPHatchSwap)**
 - [x] Permissionless coin creation with on-chain creation fee, metadata, 18-decimals
@@ -205,9 +214,10 @@ More: [`TECHNICAL-HIGHLIGHTS.md`](./TECHNICAL-HIGHLIGHTS.md).
 - [x] EIP-712-secured Supabase write layer (service-role only)
 - [x] Multi-chain routing + on-chain fallback indexer
 
----
+</details>
 
-## 7. Monad Metropolis bounty artifacts
+<details>
+<summary><strong>7. Monad Metropolis bounty artifacts</strong> — Envio 索引器 · MetaMask Agent 插件 · Bounty 文案 · 链上预测市场</summary>
 
 Built specifically for the Monad hackathon (execution status:
 [`bounty-submissions/README.md`](./bounty-submissions/README.md), full plan:
@@ -222,9 +232,10 @@ Built specifically for the Monad hackathon (execution status:
 A live prediction market was also opened and smoke-tested on-chain during the
 event (market digest `0x7fd5…3e52`, YES/NO 52/53).
 
----
+</details>
 
-## 8. 5-minute demo
+<details>
+<summary><strong>8. 5-minute demo</strong> — 登录 → 发币 → 交易 → 毕业 → 付费剧集/回购 → 预测市场</summary>
 
 See [`DEMO-SCRIPT.md`](./DEMO-SCRIPT.md). Short path:
 
@@ -235,9 +246,10 @@ See [`DEMO-SCRIPT.md`](./DEMO-SCRIPT.md). Short path:
 5. **4:00** — Upload a paid episode → buy access as a fan → trigger daily buyback-and-burn.
 6. **4:45** — Open the prediction market and show YES/NO share purchase & settlement.
 
----
+</details>
 
-## 9. Security considerations
+<details>
+<summary><strong>9. Security considerations</strong> — 链上角色门控 · EIP-712 验签 · 回调鉴权 · 滑点 · 资金完整性 · 归属</summary>
 
 - **Diamond + per-selector roles**: privileged functions are gated on chain via
   `AccessControl.canCall(account, selector)`; the client never decides.
@@ -254,8 +266,13 @@ See [`DEMO-SCRIPT.md`](./DEMO-SCRIPT.md). Short path:
 - **Vesting**: creator reserve tokens are non-transferable through the curve
   until cliff/vest conditions after graduation.
 
-## 10. License note
+</details>
+
+<details>
+<summary><strong>10. License note</strong> — 代码摘录用途与 v3/v4 数学库出处</summary>
 
 Snippets are excerpts of proprietary PoPo.meme code provided for hackathon
 review only. V4-style math libraries (`FullMath`, `SqrtPriceMath`, `SwapMath`,
 `Tick*`, `TickMath`) follow established Uniswap v3/v4 public design.
+
+</details>
