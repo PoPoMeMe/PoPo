@@ -153,7 +153,9 @@ mm popo position 0
 
 ## 3. Envio — Best Use of Envio ($1,000)
 
-**字段要求**：真实可用的 Envio 应用 + 视频 + 公开 repo。
+**字段要求**：真实可用的 Envio 应用 + 公开 repo；demo 视频可选（≤2min）。
+**当前状态：已 live 在跑**（`envio dev` + Hasura :8080），chain 10143，start 70016287，
+head 70,445,145 且持续前进；已索引 61 coins / 24 traders / 703 HatchTrade / 7 PredictionMarket。
 
 **Describe your integration / answer:**
 
@@ -174,11 +176,16 @@ mm popo position 0
 > The GraphQL API answers coin/holder/volume rankings and prediction
 > open-interest questions without getLogs-heavy public-RPC polling — important
 > under Monad's sub-second blocks and strict node log limits.
+> - Live, synced to head (block 70,445,145+): 61 coins, 24 traders, 703 Hatch
+>   trades, 7 prediction markets. The prediction trade placed through our
+>   MetaMask Agent Wallet plugin (`0x14bbadb4…`, block 70202021, 2 YES) is
+>   indexed as a `PredictionTrade` row — one trade visible across two bounties.
 
 **Run:**
 
 ```bash
-cd hackathon/envio-indexer && cp .env.example .env && npm i && npm run dev
+cd hackathon/envio-indexer && cp .env.example .env   # set ENVIO_API_TOKEN
+npm i && npm run codegen && npm run dev              # Hasura/GraphQL on :8080
 ```
 
 **Demo video (≤2 min):** `【VIDEO_ENVIO】` ｜ **Repo:** `【REPO_URL】`
@@ -203,17 +210,21 @@ cd hackathon/envio-indexer && cp .env.example .env && npm i && npm run dev
 > getLogs-heavy client indexing. The integration is env-gated
 > (`VITE_ALCHEMY_API_KEY`) and fails safe: without a key the app uses the
 > original endpoints unchanged. We verified on Monad testnet that the Alchemy
-> endpoint returns chainId `0x279f` (10143), tracks the canonical head, and
-> returns real token balances/transfers for the $P contract
-> `0xf8D44b7682fe1f2D3d5089DCA3510D830675C662`.
-> Code: `app/src/lib/alchemy.ts`, `app/src/hooks/use-alchemy-monad.ts`, wired in
+> endpoint returns chainId `0x279f` (10143) and, for the $P contract
+> `0xf8D44b7682fe1f2D3d5089DCA3510D830675C662`, the exact live balance
+> (999,900 $P) plus the faucet-mint transfer `0xcffa39500ad667b8…` from
+> `alchemy_getAssetTransfers`. The data is surfaced in a dedicated, env-gated
+> "Alchemy Supernode · Monad" panel on the `/10143/faucet` page ($P balance +
+> timestamped in/out transfer feed with explorer links).
+> Code: `app/src/lib/alchemy.ts`, `app/src/hooks/use-alchemy-monad.ts`, panel
+> `AlchemyMonadPanel` in `app/src/pages/faucet.tsx`, RPC wired in
 > `app/src/main.tsx`.
 
 **Optional demo video (≤2 min):** `【VIDEO_ALCHEMY】`
 
 ---
 
-## 5. 主赛道提交（Onchain Finance & Tracking）公共素材
+## 5. 主赛道提交（Onchain Finance & Trading）公共素材
 
 - **Live link:** `【LIVE_URL】`（Monad testnet 默认构建；评委登录用邮箱/ passkey，
   在站内 faucet 领测试 $P）。

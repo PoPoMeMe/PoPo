@@ -1,8 +1,8 @@
 # Envio HyperIndex Bounty Submission — PoPo.meme on Monad
 
 > **Track:** Onchain Finance & Trading (Monad testnet, chainId 10143)
-> **Bounty:** Build something on Envio (HyperIndex / HyperSync / HyperRPC)
-> **Team:** PoPo.meme (`predpred`)
+> **Bounty:** Best Use of Envio (HyperIndex) ｜ **Prize:** $1,000 USD
+> **Team:** PoPo.meme (`predpred`) ｜ demo video optional (≤2 min)
 
 ## What we built
 
@@ -56,17 +56,45 @@ Source: `envio-indexer/`
   (`IPPHatchSwapBase`, prediction `IBase`).
 - Start block and address taken from the verified on-chain deployment.
 
+## Live status (verified 2026-10-12, local `envio dev` + Hasura :8080)
+
+The indexer is running and has caught up to the chain head:
+
+- `chain_metadata`: chain_id **10143**, start_block **70016287**,
+  latest_processed_block **70,442,952** (still advancing).
+- Live entity counts from the auto-generated GraphQL API:
+  - **61** `Memecoin`, **24** `Trader`, **703** `HatchTrade`
+  - **7** `PredictionMarket` (with live YES/NO supply + trade counts)
+  - `PredictionTrade` ledger populated.
+- Cross-surface end-to-end proof: the buy placed through the **MetaMask Agent
+  Wallet CLI plugin** (`0x14bbadb4…`, block **70202021**, 2 YES,
+  quote `38672491599734362682` wei) appears as a `PredictionTrade` row here —
+  the same trade is thus visible in both bounties.
+
+Example query (Hasura at http://localhost:8080/v1/graphql, no admin secret):
+
+```graphql
+query {
+  PredictionMarket { id digest yesSupply noSupply tradeCount }
+  PredictionTrade(limit: 5, order_by: { blockNumber: desc }) {
+    side outcome shares quoteP blockNumber transactionHash
+  }
+}
+```
+
 ## Run
 
 ```bash
 cd envio-indexer
-cp .env.example .env
+cp .env.example .env          # set ENVIO_API_TOKEN (HyperSync access)
 npm install
 npm run codegen
-npm run dev          # indexer + GraphQL
+npm run dev                   # Postgres + Hasura :8080 + indexer
 ```
 
-See the folder README for entity details and example queries.
+Containers on this machine: `envio-postgres` (host :5433) and
+`envio-hasura` (host :8080). GraphQL: http://localhost:8080/v1/graphql (no
+admin secret). See the folder README for entity details and example queries.
 
 ## Deliverables mapping
 
