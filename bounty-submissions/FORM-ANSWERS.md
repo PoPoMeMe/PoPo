@@ -60,7 +60,7 @@
 
 ---
 
-## 2. MetaMask — Best use of Agent Wallet ($5,000)
+## 2. MetaMask — Best Agent Wallet Plugin ($2,500)
 
 **字段要求**：可安装插件 + 演示通过 Agent Wallet 完成真实链上动作 + 视频。
 
@@ -83,9 +83,18 @@
 > - Public market reads use viem over Monad public RPC / dRPC (override with
 >   `POPO_MONAD_RPC_URL`, including Alchemy); wallet state and writes use the
 >   Agent Wallet host.
-> - We completed a real server-wallet (`guard`) EIP-712 faucet signature; the
->   hot-wallet minted 1,000,000 test $P in tx
->   `0xcffa39500ad667b8e67105b0d72f38ce8e7c2354d6af806d4f92395b00f6ac93`.
+> - We completed the **full live trade loop** with a real server-wallet
+>   (`guard`) on chainId 10143, every mutation confirmed through Agent Wallet's
+>   per-transaction email MFA and policy layer:
+>   EIP-712 faucet claim `0xcffa3950…6ac93` (+1,000,000 $P, hot-wallet mint),
+>   ERC-20 approve `0x34526ee1…8942`, deposit 100 $P `0xce5f260b…2a28`
+>   (success), vault ERC-6909 approve `0xcf4fadca…a421`, and
+>   `predict buy 0 yes 2` `0x14bbadb4…e768` (success) — position YES=2, vault
+>   100→61.3275084 $P, matching the plugin's exact curve quote to the wei.
+> - Monad testnet ships in the Agent Wallet registry with no RPC config; we add
+>   it once via `customEvmChains` (`rpcTarget=https://testnet-rpc.monad.xyz`)
+>   and supply EIP-1559 fees + gas ourselves so the host's gas API (which
+>   rejects 10143) is never needed.
 > - Slippage protection on bonding-curve trades uses on-chain `previewBuy/
 >   previewSell`; prediction buys replicate the on-chain `k·√supply + c` pricing
 >   and pre-fund the internal vault exactly, verified bit-for-bit against chain
@@ -106,29 +115,43 @@ mm config set experimentalAllowUnverifiedInstalls true
 cd hackathon/metamask-agent-plugin && npm i && npm run link-host-sdk && npm run build
 mm plugins install "file:$PWD" --accept-permissions
 
+# One-time: give chainId 10143 a public RPC (the registry ships none) by adding
+# an entry with rpcTarget https://testnet-rpc.monad.xyz to
+# ~/.metamask/wallets.json -> data.customEvmChains (exact JSON in the README).
+mm wallet balance --chain 10143 --json   # should read your MON
+
 mm popo markets                 # public read, no login required
-mm popo quote --kind predict --market 0 --outcome yes --amount 2
+mm popo quote --kind predict --market 0 --outcome yes --side buy --amount 2
 mm login                        # one-time, for wallet commands
 mm popo faucet                  # Agent Wallet EIP-712 signature; claims test $P
-# get MON gas from https://faucet.monad.xyz, then:
-mm popo deposit --amount 20
-mm popo predict --side buy --market 0 --outcome yes --amount 2
+# get MON gas from https://faucet.monad.xyz, then confirm the EMAIL approval
+# Agent Wallet emails for EACH write (expires in 10 min; trust the network once):
+mm popo deposit 20              # positional amount: approve -> deposit -> 6909 approve
+mm popo predict buy 0 yes 2     # positional: <buy|sell> <marketRef> <yes|no> <shares>
+mm popo position 0
 ```
 
 > 7.1.0 note: the plugin already ships a Node-compat shim for the CLI's
 > `window.addEventListener` bug and keeps the SDK a single peer copy, so no
-> `NODE_OPTIONS` wrapper is needed. Under Node 24, networked `mm` commands may
-> need `NODE_USE_ENV_PROXY=1` plus proxy env vars on a restricted network.
-> Public reads use the Monad public RPC (override via `POPO_MONAD_RPC_URL`);
-> only wallet/signature/trade commands need `mm login`.
+> `NODE_OPTIONS` wrapper is needed. Server-wallet + social login sends a
+> **per-transaction approval email** (`mm wallet requests list` /
+> `mm wallet requests watch <id>` to track); the first write also asks you to
+> trust the new network. Under Node 24, networked `mm` commands may need
+> `NODE_USE_ENV_PROXY=1` plus proxy env vars on a restricted network. Public
+> reads use the Monad public RPC (override via `POPO_MONAD_RPC_URL`); only
+> wallet/signature/trade commands need `mm login`.
 
 **Agent skill file:** https://github.com/PoPoMeMe/PoPo/blob/main/skills/popo/SKILL.md
 
-**Demo video (≤5 min):** `【VIDEO_MM】` ｜ **Repo:** https://github.com/PoPoMeMe/PoPo
+**Demo video (REQUIRED, ≤5 min):** `【VIDEO_MM】`
+**SKILL.md (REQUIRED url):** https://github.com/PoPoMeMe/PoPo/blob/main/skills/popo/SKILL.md
+**Repo:** https://github.com/PoPoMeMe/PoPo
+
+> 官方唯一评审标准：*“a working, installable plugin that routes all transactions through the Agent Wallet with no bypass of signing, policy, or MFA”*。提交视频必须展示每笔交易的 Agent Wallet MFA/policy 审批（我们用 guard + 每笔邮件确认），不能切 beast、不能加白名单自动放行。
 
 ---
 
-## 3. Envio — Best project built on Envio ($5,000)
+## 3. Envio — Best Use of Envio ($1,000)
 
 **字段要求**：真实可用的 Envio 应用 + 视频 + 公开 repo。
 

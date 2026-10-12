@@ -207,13 +207,13 @@ export async function submitThroughAgentWallet(
   const client = monadClient(cmd);
   const from = activeAddress(cmd);
 
-  // Agent Wallet's GasFeeController calls its hosted gas API, which rejects
-  // Monad testnet (10143) with "Invalid chainId" before signing. When the
-  // transaction carries a legacy gasPrice the controller skips that remote
-  // estimate, so we source both gasPrice and gas directly from the public RPC.
-  // Agent Wallet remote signing is EIP-1559 only: supply BOTH max fees so the
-  // host skips its hosted GasFeeController (which rejects chainId 10143). Base
-  // fee comes from the latest block; tip defaults to a small fixed value.
+  // Agent Wallet remote signing is EIP-1559 only (no legacy gasPrice). Its
+  // hosted GasFeeController rejects Monad testnet (10143) with "Invalid
+  // chainId" before signing, so we supply BOTH max fees and an explicit gas
+  // limit sourced from the public RPC (configured for 10143 via
+  // customEvmChains, see README). Base fee comes from the latest block; the
+  // tip is a small fixed value. This makes the host skip its hosted gas
+  // estimate for the unsupported chain.
   const block = await client.getBlock();
   const baseFee = block.baseFeePerGas ?? (await client.getGasPrice());
   const maxPriorityFeePerGas = 2_000_000_000n; // 2 gwei tip

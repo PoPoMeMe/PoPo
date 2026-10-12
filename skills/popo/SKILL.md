@@ -20,9 +20,9 @@ The plugin adds nine commands under the `popo` topic:
 | `mm popo vault` | Agent Wallet | Show ERC-20 `$P`, vault `$P`, and allowances. |
 | `mm popo position` | Agent Wallet | Show YES/NO positions. |
 | `mm popo faucet` | Agent Wallet signature | Claim 1,000,000 testnet `$P` through an Agent Wallet-approved EIP-712 signature. No MON gas is needed for the faucet claim because the service hot wallet mints the tokens. |
-| `mm popo deposit --amount <P>` | Agent Wallet transaction | Approve ERC-20 `$P`, deposit into the ERC-6909 vault, and approve trading. |
-| `mm popo predict ...` | Agent Wallet transaction | Buy or sell prediction YES/NO shares. |
-| `mm popo trade ...` | Agent Wallet transaction | Buy or sell a Hatch bonding-curve token. |
+| `mm popo deposit <P>` | Agent Wallet transaction | Approve ERC-20 `$P`, deposit into the ERC-6909 vault, and approve trading. Amount is **positional**. |
+| `mm popo predict <buy\|sell> <marketRef> <yes\|no> <shares>` | Agent Wallet transaction | Buy or sell prediction YES/NO shares (**positional** args). |
+| `mm popo trade <buy\|sell> <tokenId> <amount>` | Agent Wallet transaction | Buy or sell a Hatch bonding-curve token (**positional** args). |
 
 Every command accepts `--json`. Machine agents should prefer `--json` because it returns stable `{ ok, data, error }` output.
 
@@ -42,6 +42,29 @@ mm popo --help
 ```
 
 The plugin is built and verified against `@metamask/agent-wallet` `7.1.0`. It supports both `server-wallet` and BYOK modes.
+
+### One-time: add Monad testnet RPC (`customEvmChains`)
+
+ChainId `10143` is in the Agent Wallet registry but ships with **no RPC
+config**, and the hosted gas API answers `400 Invalid chainId`. Add a custom
+RPC once in `~/.metamask/wallets.json` → `data.customEvmChains`:
+
+```jsonc
+[
+  {
+    "key": "monad-testnet",
+    "chainId": 10143,
+    "caip2": "eip155:10143",
+    "name": "Monad Testnet",
+    "nativeCurrency": { "name": "Monad", "symbol": "MON", "decimals": 18 },
+    "blockExplorer": "https://testnet.monadexplorer.com",
+    "rpcTarget": "https://testnet-rpc.monad.xyz"
+  }
+]
+```
+
+Verify with `mm wallet balance --chain 10143 --json`. The plugin also fills
+EIP-1559 max fees + gas itself (remote signing rejects legacy `gasPrice`).
 
 If a restricted network requires a proxy, set Node's built-in fetch proxy support before running networked `mm` commands:
 
@@ -64,7 +87,7 @@ mm wallet address
 mm wallet balance
 ```
 
-Recommended mode is `server-wallet` + `guard`, so every signature and transaction can be approved through MetaMask Agent Wallet policy/MFA.
+Recommended (and bounty-required) mode is `server-wallet` + `guard`, so every signature and transaction is approved through MetaMask Agent Wallet policy/MFA. The bounty rule is explicit: **no bypass of signing, policy, or MFA**.
 
 Public reads do not require login:
 
@@ -99,43 +122,61 @@ mm popo position --json
 
 3. Obtain MON gas from <https://faucet.monad.xyz>. The Agent Wallet address returned by `mm wallet address` must hold MON before deposit or trade transactions.
 
-4. Deposit `$P` into the PoPo trading vault:
+4. Deposit `$P` into the PoPo trading vault (positional amount):
 
    ```bash
-   mm popo deposit --amount 100 --json
+   mm popo deposit 100 --json
    ```
 
-5. Buy prediction shares:
+5. Buy prediction shares (positional `<buy|sell> <marketRef> <yes|no> <shares>`):
 
    ```bash
-   mm popo predict --side buy --market 0 --outcome yes --amount 2 --json
+   mm popo predict buy 0 yes 2 --json
    ```
 
 6. Verify the resulting state:
 
    ```bash
    mm popo vault --json
-   mm popo position --market 0 --json
+   mm popo position 0 --json
    ```
 
 7. Exit the position:
 
    ```bash
-   mm popo predict --side sell --market 0 --outcome yes --amount 2 --json
+   mm popo predict sell 0 yes 2 --json
    ```
 
 For Hatch tokens, first use a valid Monad Hatch token id. Do not use token id `0`; `previewBuy` reverts for it:
 
 ```bash
 mm popo quote --kind hatch --token <hatchTokenId> --side buy --amount 10 --json
-mm popo trade --side buy --token <hatchTokenId> --amount 10 --slippage-bps 100 --json
+mm popo trade buy <hatchTokenId> 10 --slippage-bps 100 --json
 ```
+
+### MFA approvals are mandatory and per transaction
+
+In `server-wallet` + `guard` mode with a social login, each state-changing
+request pauses as `AWAITING_MFA` and must be confirmed from the email
+registered to the MetaMask account (`authMethod: social`). Requests expire 10
+minutes after creation. The first transaction on a new network also asks you
+to tick **“Trust Monad Testnet”**. Track and resume requests with:
+
+```bash
+mm wallet requests list --json
+mm wallet requests watch <pollingId>
+```
+
+The agent must not switch the wallet to `beast`/YOLO mode or add a broad
+allowlist to skip these approvals — doing so bypasses policy/MFA and defeats
+the Agent Wallet security model. It is correct and expected to stop and wait
+for the owner to approve each request.
 
 ## Security and policy rules
 
 - Never read, print, store, or request the owner's private key, mnemonic, password, or session token.
 - Every signature and transaction must use `ctx.walletExecutor` in the plugin; do not bypass Agent Wallet with a local signer, relayer, or raw key.
-- Treat `guard` approval prompts as mandatory. Stop and ask the human owner to approve or reject the Agent Wallet request.
+- Treat `guard` approval prompts as mandatory. Stop and ask the human owner to approve or reject each Agent Wallet request via the MetaMask MFA email. Do not switch to `beast` mode or add policy allowlists to auto-approve PoPo transactions.
 - Use small testnet amounts first.
 - Do not assume a transaction is final until the JSON result contains a transaction hash and the receipt is successful.
 - Slippage is enforced on-chain for Hatch trades through `minTokensOut` / `minQuoteOut`.
@@ -161,6 +202,8 @@ export POPO_MONAD_RPC_URL="https://monad-testnet.g.alchemy.com/v2/$ALCHEMY_API_K
 - `AUTH_FAILED`: run `mm login` and ensure the project was initialized with `mm init`.
 - `NOT_INITIALIZED`: run `mm init --wallet server-wallet --mode guard` in the project directory.
 - `No active Agent Wallet found`: check `mm wallet list` and select the intended wallet.
-- Capability errors after editing the plugin: rebuild and reinstall it with `npm run build && mm plugins install "file:$PWD" --accept-permissions`.
+- Capability errors after editing the plugin (e.g. `Plugin 'popo:x' did not declare the 'wallet-read' capability`): rebuild and reinstall it with `npm run build && mm plugins install "file:$PWD" --accept-permissions`.
+- `400 Invalid chainId` / hosted gas error on 10143: add the `customEvmChains` RPC entry above; the plugin supplies EIP-1559 fees itself and must not rely on the hosted gas API for Monad testnet.
+- `MISSING_ARG` on deposit/predict/trade: these use **positional** args (`mm popo deposit 100`, `mm popo predict buy 0 yes 2`, `mm popo trade buy <tokenId> 10`), not `--amount/--side/--market` flags.
 - Agent Wallet rejects EIP-712 signing with a domain chainId mismatch: keep chainId `10143` in both the signature request and PoPo faucet payload.
 - Out-of-gas or nonce errors require MON and a healthy Agent Wallet policy state; do not retry blindly.

@@ -42,9 +42,9 @@ PoPo.meme is a meme-coin launch + trading platform with an integrated
 | `mm popo vault` | `wallet-read` | Raw ERC-20 `$P`, ERC-20 allowance, internal vault `$P` and vault allowance. |
 | `mm popo position [ref]` | `wallet-read` | Your YES/NO share balances across all markets or one. |
 | `mm popo faucet` | `wallet-read` + `wallet-submit` | Sign an Agent Wallet-approved EIP-712 PoPoAuth request to claim 1,000,000 testnet `$P`; the service hot wallet mints, so no MON gas is needed for this drip. |
-| `mm popo deposit <amount>` | `wallet-submit` | ERC-20 approve (once) → deposit into vault → one-time ERC-6909 trading approve. |
-| `mm popo predict --side buy\|sell --market <ref> --outcome yes\|no --amount <shares>` | `wallet-submit` | Buy/sell YES/NO shares; auto-funds the vault on buys (disable with `--no-auto-fund`). |
-| `mm popo trade --side buy\|sell --token <id> --amount <amount>` | `wallet-submit` | Buy/sell a Hatch meme coin with slippage protection (`--slippage-bps`, default 100). |
+| `mm popo deposit <amount>` | `wallet-read` + `wallet-submit` | ERC-20 approve (once) → deposit into vault → one-time ERC-6909 trading approve. |
+| `mm popo predict <buy\|sell> <ref> <yes\|no> <shares>` | `wallet-read` + `wallet-submit` | Buy/sell YES/NO shares (**positional args**); auto-funds the vault on buys (pass `--no-auto-fund` to disable). |
+| `mm popo trade <buy\|sell> <tokenId> <amount>` | `wallet-read` + `wallet-submit` | Buy/sell a Hatch meme coin with slippage protection (`--slippage-bps`, default 100). |
 
 All commands support `--json` for machine/agent consumption.
 
@@ -71,6 +71,45 @@ npm run build
 mm plugins install "file:$PWD" --accept-permissions
 mm popo --help
 ```
+
+### One-time setup: give chainId 10143 a public RPC (`customEvmChains`)
+
+Monad **Testnet** (`10143`) is in the Agent Wallet registry but ships **with
+no RPC config**, and its hosted GasFeeController/EVM gateway answers
+`400 Invalid chainId` for it. Fix it once by adding a custom RPC to the local
+wallet state (`~/.metamask/wallets.json` → `data.customEvmChains`). An entry
+with an explicit `rpcTarget` is used as-is (the host then skips its gateway):
+
+```jsonc
+// ~/.metamask/wallets.json → data.customEvmChains
+[
+  {
+    "key": "monad-testnet",
+    "chainId": 10143,
+    "caip2": "eip155:10143",
+    "name": "Monad Testnet",
+    "nativeCurrency": { "name": "Monad", "symbol": "MON", "decimals": 18 },
+    "blockExplorer": "https://testnet.monadexplorer.com",
+    "rpcTarget": "https://testnet-rpc.monad.xyz"
+  }
+]
+```
+
+Verify with `mm wallet balance --chain 10143 --json` (it should read your MON
+over the public RPC). The plugin also fills EIP-1559 `maxFeePerGas` /
+`maxPriorityFeePerGas` and an explicit gas limit itself, because remote signing
+is EIP-1559-only and never calls the hosted gas API for 10143.
+
+### Approvals are per-transaction email MFA (server-wallet + guard)
+
+With `server-wallet` + `guard` mode and a social login, **each** state-changing
+request pauses as `AWAITING_MFA` and must be confirmed from the email
+registered to the MetaMask account (`authMethod: social`). Requests expire 10
+minutes after creation — confirm quickly. The very first transaction on a new
+network also surfaces a warning-level **“Trust Monad Testnet / New network”**
+policy that you tick once; “Shield scan not available on this network” is
+informational only. Track pending requests with `mm wallet requests list` and
+resume watching one with `mm wallet requests watch <pollingId>`.
 
 ### Known 7.1.0 quirks (already handled here)
 
@@ -110,10 +149,11 @@ mm popo quote --kind hatch --token <hatchTokenId> --side buy --amount 10
 # requires mm login / wallet
 mm popo faucet                        # Agent Wallet EIP-712 sign; receive 1,000,000 test $P
 # after receiving MON gas from https://faucet.monad.xyz:
-mm popo deposit 25                    # fund the trading vault
-mm popo predict --side buy --market 0 --outcome yes --amount 5
-mm popo position --market 0          # check your shares
-mm popo predict --side sell --market 0 --outcome yes --amount 5
+mm popo deposit 25                    # fund the trading vault (positional amount)
+mm popo predict buy 0 yes 5           # buy 5 YES on market index 0 (positional)
+mm popo position 0                    # check your shares
+mm popo predict sell 0 yes 5          # sell them back
+mm popo trade buy <hatchTokenId> 10   # buy a Hatch meme coin (positional)
 ```
 
 ## How settlement works
@@ -139,6 +179,22 @@ src/lib/sdk.ts        active wallet, host viem client, calldata encode, walletEx
 src/lib/curve.ts      exact k·√supply + c sum (matches MarketBase._curveSum)
 src/commands/popo/    one file per `mm popo …` command
 ```
+
+## Live run on Monad testnet (2026-10-11)
+
+Server wallet `0xb81fCEe70017317F79C169B3727193a786bFc88D`, chainId `10143`,
+trading mode `guard`; every mutation confirmed via per-tx email MFA:
+
+| Step | tx | Result |
+| --- | --- | --- |
+| Faucet claim (EIP-712 sign, hot wallet mints) | [`0xcffa3950…6ac93`](https://testnet.monadexplorer.com/tx/0xcffa39500ad667b8e67105b0d72f38ce8e7c2354d6af806d4f92395b00f6ac93) | +1,000,000 `$P` |
+| ERC-20 approve (diamond, max) | `0x34526ee14c45bbb44c1d546bf1ac0cad80b9cde2330d26bd169f4ca1e3d38942` | confirmed |
+| `deposit` 100 `$P` | [`0xce5f260b…2a28`](https://testnet.monadexplorer.com/tx/0xce5f260bbbbb9867fe6b2eaafb41b8fdeec27043ee58019abe7f143909bd2a28) | success, vault 0→100 |
+| Vault ERC-6909 approve | `0xcf4fadca72605282f23df8a6033044ca402ac09ff80125ce94987c5100dea421` | confirmed |
+| `predict buy 0 yes 2` | [`0x14bbadb4…e768`](https://testnet.monadexplorer.com/tx/0x14bbadb455df16f5b639873e31b0a3f9be5a195094013802a5eac111a487e768) | success, +2 YES, vault 100→61.3275084 `$P` |
+
+The 38.6724916 `$P` spend matches the plugin's own `popo quote` exact curve
+cost to the wei; `mm popo position 0` reports `yesShares = 2`.
 
 ## Security model
 

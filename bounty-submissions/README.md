@@ -8,8 +8,8 @@ Team: **PoPo.meme** (`predpred`) ｜ Plan doc: `docs/2026-10-11-monad-metropolis
 | # | Bounty | Tier | Artifact | Status |
 | --- | --- | --- | --- | --- |
 | T7 | (track support) Prediction market on Monad | — | live market digest `0x7fd5…3e52`, YES/NO 52/53, smoke-tested | **shipped on-chain** |
-| T8 | **MetaMask Agent Wallet** — Best use of Agent Wallet | P1 $5k | `metamask-agent-plugin/` (`mm-plugin-popo`, 8 commands) | **CLI 7.1.0 installed + plugin linked; read cmds verified live on Monad (27 markets)**; write cmds need your `mm login` + funds, then record |
-| T10 | **Envio HyperIndex** | P1 $5k | `envio-indexer/` (`popomonad`, 8 events → 7 entities) | **built, codegen + tsc clean**; needs `envio dev` (Postgres) + video |
+| T8 | **MetaMask Agent Wallet** — Best Agent Wallet Plugin | **$2,500** | `metamask-agent-plugin/` (`mm-plugin-popo`, 9 commands) + `skills/popo/SKILL.md` | **full live write loop verified on Monad via guarded server wallet** — faucet EIP-712 mint `0xcffa…6ac93`, approve `0x34526e…`, deposit 100 `0xce5f26…`, 6909 approve `0xcf4fad…`, `predict buy 0 yes 2` `0x14bbad…` (success, YES=2, vault 100→61.3275084 $P); **per-tx email MFA kept (required — no bypass of signing/policy/MFA)**. Remaining: record REQUIRED ≤5min video + submit SKILL.md url |
+| T10 | **Envio HyperIndex** — Best Use of Envio | **$1,000** | `envio-indexer/` (`popomonad`, 8 events → 7 entities) | **built, codegen + tsc clean**; needs `envio dev` (Postgres) + optional ≤2min video |
 | P0 | **Privy** — beyond authentication | P0 $5k | `bounty-submissions/privy.md` | integration already in app; **needs only the ≤2min video + links** |
 | T11 | **Alchemy** — Supernode RPC + Enhanced token APIs | P1 $1k credits | `app/src/lib/alchemy.ts`, `app/src/hooks/use-alchemy-monad.ts`, wired in `main.tsx`; `bounty-submissions/alchemy.md` | **key verified live on Monad** (chainId `0x279f`, real balances/transfers); set key in Vercel + rebuild for prod |
 
@@ -38,7 +38,7 @@ links), `VIDEO-SCRIPT.md` (per-second shot lists for all 6 clips).
 6. **Demo env** — Monad-testnet default demo build + judge test accounts
    (faucet $P), started manually by you per team rule (agents don't start
    services).
-7. **Videos + form** — T13/T14: pitch ≤2min, per-bounty ≤2min; fill each
+7. **Videos + form** — pitch ≤2min; per-bounty video limits differ: Privy/Envio/Alchemy ≤2min (optional), **MetaMask ≤5min and REQUIRED (plus required SKILL.md url)**; fill each
    bounty's required fields (the `requirements` list is captured in
    `bounty-submissions/*.md`).
 

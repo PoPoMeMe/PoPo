@@ -28,37 +28,59 @@
 
 ---
 
-## B. MetaMask Agent Wallet 插件 ≤2:00（`VIDEO_MM`）
+## B. MetaMask Agent Wallet 插件 ≤5:00（`VIDEO_MM`，官方必填）
 
-> 环境已就绪（2026-10-11 实测）：本机已装 `@metamask/agent-wallet` **7.1.0** 并
-> `mm plugins install file:.../metamask-agent-plugin` 装好 `mm-plugin-popo`。
-> 只读命令**免登录**可直接录前半段；写命令需先在交互终端 `mm login`（扫码/浏览器/token，
-> 本人操作密钥）。当前实测 server wallet 为 `0xb81f…c88d` / `guard` 模式；可用
-> `mm popo faucet` 通过 Agent Wallet EIP-712 签名领取 1,000,000 $P（服务端 mint，无需 MON
-> gas），但 deposit/predict 仍需从 https://faucet.monad.xyz 领取 MON。
+> ⭐ 这条 bounty 唯一评审标准是 *“routes all transactions through the Agent
+> Wallet with no bypass of signing, policy, or MFA”*。全片核心就是反复证明：
+> 插件**从不碰私钥**，每一次签名/交易都走 Agent Wallet，并由 owner 逐笔在
+> 邮件 MFA + guard policy 中确认。**不要切 beast、不要配白名单自动放行。**
 
-**第一段（无需登录，现在就能录）**
-- **0:00–0:12** 终端 `mm popo --help`：列出 9 个命令（markets/market/quote/vault/
-  position/faucet/deposit/predict/trade）。
-- **0:12–0:30** `mm popo markets`：实链列出市场（当前 27 个），口播「公开读免登录、
+> 环境已就绪（2026-10-11 实测，server wallet `0xb81f…c88d` / `guard` / chainId 10143）：
+> 本机已装 `@metamask/agent-wallet` **7.1.0** 并
+> `mm plugins install file:.../metamask-agent-plugin` 装好 `mm-plugin-popo`（9 命令）。
+> 已在 `~/.metamask/wallets.json` 的 `customEvmChains` 给 10143 配 `rpcTarget`
+> （registry 无内置 RPC，否则托管 gas API 报 Invalid chainId）。只读命令**免登录**。
+> 写命令已在本机真实跑通：server-wallet + 社交登录下，**每笔交易都是发到注册邮箱的
+> MFA 确认链接**（不是 App 弹窗），首笔还要勾选「Trust Monad Testnet」，请求 10 分钟过期；
+> 用 `mm wallet requests list/watch` 跟踪。已落袋的 tx 可直接在 explorer 展示（见下）。
+
+**第一段 · 安装与只读（无需登录）**
+- **0:00–0:20** 口播选题：「给 MetaMask Agent Wallet 加一个交易超能力 —— 在 Monad
+  testnet 上交易 PoPo.meme 预测市场/meme 币」。终端 `mm popo --help`：列出 9 个命令。
+- **0:20–0:45** 快速带过安装：`npm i -g @metamask/agent-wallet`、`npm run build`、
+  `mm plugins install "file:$PWD" --accept-permissions`（可快进），以及一次性的
+  `customEvmChains` RPC 配置（强调只是节点连接，不是安全放行）。
+- **0:45–1:10** `mm popo markets`：实链列出市场（当前 27 个），口播「公开读免登录、
   走公共 Monad RPC（可用 POPO_MONAD_RPC_URL 换 Alchemy），插件不碰私钥」。
-- **0:30–0:48** `mm popo market 0`：YES/NO 供应、价格、手续费、奖池读数。
-- **0:48–1:05** `mm popo quote --kind predict --market 0 --outcome yes --amount 2`：
-  展示精确报价（如 2 份 YES=38.526 $P，k·√supply+c 逐份求和），强调 quote 不发交易。
+- **1:10–1:30** `mm popo market 0`：YES/NO 供应、价格、手续费、奖池读数。
+- **1:30–1:55** `mm popo quote --kind predict --market 0 --outcome yes --side buy --amount 2`：
+  展示精确报价（k·√supply+c 逐份求和），强调 quote 只模拟、不发交易。
 
-**第二段（mm login + 充值后录）**
-- **1:05–1:22** `mm popo faucet`：展示 Agent Wallet EIP-712 签名批准；成功后 explorer 打开
-  mint tx `0xcffa…6ac93`，`mm popo vault` 显示 1,000,000 $P。
-- **1:22–1:32** `mm popo vault` / `mm popo position`：展示当前钱包金库与持仓（需登录）。
-- **1:32–1:48** `mm popo deposit --amount 20`：**Agent Wallet 弹出 MFA/policy 批准卡**，
-  批准后 approve→deposit→6909 approve 完成（重点给批准弹窗特写）。
-- **1:48–2:00** `mm popo predict --side buy --market 0 --outcome yes --amount 2`：再次弹
-  Agent Wallet 批准，成交；explorer 展示 tx，口播 `walletExecutor` / `wallet-submit`、BYOK
-  与 server 同策略。
+**第二段 · 每笔都过 Agent Wallet MFA（核心得分点）**
+- **1:55–2:15** `mm init show` / `mm wallet trading-mode get`：特写 **server-wallet +
+  guard**；口播「所有写操作都必须过 Agent Wallet 的 signing/policy/MFA，插件里没有私钥」。
+- **2:15–2:45** `mm popo faucet`：终端出现 `AWAITING_MFA` → **切到邮箱，点开 MetaMask
+  确认链接的完整动作**（这是重点镜头）→ 成功；explorer 打开 mint tx `0xcffa…6ac93`，
+  `mm popo vault` 显示 1,000,000 $P。说明这是 EIP-712 签名、热钱包 mint、无需 MON gas。
+- **2:45–3:05** `mm popo vault` / `mm popo position 0`：展示钱包金库与持仓（需登录）。
+- **3:05–3:50** `mm popo deposit 100`（位置参数）：终端出现 `AWAITING_MFA` → **再切邮箱
+  点确认**，给首笔「Trust Monad Testnet」guard policy 警告一个特写 → approve→deposit→
+  6909 approve 三笔依次完成；`mm popo vault` 显示金库增加。可用
+  `mm wallet requests list` 展示每个请求都要等 owner 批准。
+- **3:50–4:35** `mm popo predict buy 0 yes 2`（位置参数）：**又一封邮件 MFA** →
+  owner 确认 → 成交；`mm popo position 0` 显示 YES=2，explorer 展示 tx
+  `0x14bbadb4…e768`（success），金库 100→61.3275084 $P，与 quote 逐位一致。
+- **4:35–5:00** 收尾：并排展示 explorer 上全部 tx + 一句口播「读行情→报价→EIP-712
+  领水→存款→买入，全部经 Agent Wallet，每笔 owner 邮件 MFA，无 signing/policy/MFA
+  绕过」；打出 repo 与 `skills/popo/SKILL.md` 链接。
 
-> 若时间紧，前半段（免登录读 + quote）已能证明插件真实可用；写操作弹窗是加分项。
-> 备注：`mm popo quote --kind hatch --token <id>` 需传 Monad 上有效 Hatch token id，
-> 别用 id=0（会 revert）。
+> 已实测落袋的真实 tx（可直接录 explorer 兜底，不必重跑）：faucet mint `0xcffa3950…6ac93`、
+> ERC-20 approve `0x34526ee1…8942`、deposit 100 `0xce5f260b…2a28`（success）、
+> 6909 approve `0xcf4fadca…a421`、buy 2 YES `0x14bbadb4…e768`（success，金库 100→61.3275084 $P）。
+> 安全姿态（务必保持后再录）：`mm wallet trading-mode get` = `guard`；policy `allowlist: []`、
+> 不含 10143、`rolling_24h: 0` —— 这样每笔必发邮件 MFA。
+> 备注：写命令的 `side/market/outcome/amount` 是**位置参数**（flag 形式会报 MISSING_ARG）；
+> `mm popo quote --kind hatch --token <id>` 需传 Monad 上有效 Hatch token id，别用 id=0（会 revert）。
 
 ---
 

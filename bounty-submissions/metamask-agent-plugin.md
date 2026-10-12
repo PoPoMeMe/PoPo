@@ -1,7 +1,9 @@
 # MetaMask Agent Wallet Plugin — PoPo.meme (`mm-plugin-popo`)
 
 > **Track:** Onchain Finance & Trading (Monad testnet, chainId 10143)
-> **Bounty:** Best use of the Agent Wallet — build an agentic dApp or plugin
+> **Bounty:** Best Agent Wallet Plugin — **$2,500 USD** (single prize)
+> **Required:** installable plugin + `skills/popo/SKILL.md` url + ≤5 min demo video
+> **Sole judging criterion:** *“a working, installable plugin that routes all transactions through the Agent Wallet with no bypass of signing, policy, or MFA”*
 > **Team:** PoPo.meme (`predpred`)
 
 ## What we built
@@ -24,9 +26,9 @@ Package: `mm-plugin-popo` (oclif plugin, topic `popo`).
 | `mm popo vault` | wallet-read | Raw ERC-20 $P + internal vault $P + allowances |
 | `mm popo position [ref]` | wallet-read | YES/NO share holdings |
 | `mm popo faucet` | wallet-read + wallet-submit | Agent Wallet EIP-712 sign-in to claim 1,000,000 testnet $P (server hot wallet mints, so this drip needs no MON gas) |
-| `mm popo deposit --amount <amount>` | wallet-submit | ERC-20 approve → vault deposit → one-time ERC-6909 approve |
-| `mm popo predict --side buy\|sell --market <ref> --outcome yes\|no --amount <n>` | wallet-submit | Trade YES/NO shares (auto-funds vault on buys) |
-| `mm popo trade --side buy\|sell --token <id> --amount <amount>` | wallet-submit | Trade a Hatch meme coin with slippage protection |
+| `mm popo deposit <amount>` | wallet-read + wallet-submit | ERC-20 approve → vault deposit → one-time ERC-6909 approve |
+| `mm popo predict <buy\|sell> <ref> <yes\|no> <n>` | wallet-read + wallet-submit | Trade YES/NO shares (positional args; auto-funds vault on buys, `--no-auto-fund` to disable) |
+| `mm popo trade <buy\|sell> <tokenId> <amount>` | wallet-read + wallet-submit | Trade a Hatch meme coin with slippage protection (`--slippage-bps`, default 100) |
 
 All commands emit `--json` for machine consumption.
 
@@ -38,9 +40,15 @@ All commands emit `--json` for machine consumption.
 - **No private keys / no external signer**: the plugin never imports an
   account or signs locally. Both **BYOK** and **server-wallet** modes work,
   with the host driving MFA approval and explorer links.
-- **Allowlist/policy support out of the box**: because calls go through the
-  normal executor, `mm policy` allowlists and spending rules apply unchanged;
-  pending approvals surface via `mm wallet requests`.
+- **Policy + MFA enforced, never bypassed**: we run `server-wallet` + `guard`
+  with a **strict policy** (`addresses.allowlist: []`, chainId 10143 NOT in
+  `allowed_chains`, `outflow_limits_usd.rolling_24h: 0`). Consequently **every**
+  signature/transaction pauses as `AWAITING_MFA` and is confirmed by the owner
+  via the email registered to the MetaMask account — we deliberately do **not**
+  use `beast` mode or whitelist the PoPo contracts to auto-approve. Pending
+  approvals surface via `mm wallet requests list/watch`. The plugin supports
+  allowlists/spending rules generically (they flow through the same executor),
+  but the demo keeps the strict per-tx MFA posture the bounty requires.
 - **Least-privilege capabilities**: public market reads require no login;
   wallet reads request `wallet-read`; mutating commands request
   `wallet-submit` (faucet needs both because it reads the selected address,
@@ -72,8 +80,9 @@ markets → quote → deposit → predict/trade → position → sell
 ## Verification done (2026-10-11, live Monad testnet)
 
 - Installed `@metamask/agent-wallet` **7.1.0** globally and linked the plugin
-  with `mm plugins install "file:$PWD" --accept-permissions`; all 8 commands
-  appear under topic `popo`.
+  with `mm plugins install "file:$PWD" --accept-permissions`; all **9 commands**
+  appear under topic `popo` (markets, market, quote, vault, position, faucet,
+  deposit, predict, trade).
 - `npm run build` → `tsc` + `oclif manifest` succeed.
 - Read commands verified with **no login**:
   - `mm popo markets` returned **27 live markets**; market 0 = digest
@@ -95,6 +104,35 @@ markets → quote → deposit → predict/trade → position → sell
   `allowance(uint256 id,address owner,address spender)`.
 - Curve replica matches on-chain values exactly (e.g. next-share price at
   supply 2 = `2.931370849898476` $P).
+- **Full state-changing loop executed live through Agent Wallet MFA** (server
+  wallet `0xb81f…c88d`, `guard`, chainId 10143). Each tx paused as
+  `AWAITING_MFA` and was confirmed from the registered email before signing:
+  1. ERC-20 approve (diamond, max) — `0x34526ee14c45bbb44c1d546bf1ac0cad80b9cde2330d26bd169f4ca1e3d38942`
+  2. `deposit 100` (success, block 70199024, gas 260226) —
+     [`0xce5f260b…2a28`](https://testnet.monadexplorer.com/tx/0xce5f260bbbbb9867fe6b2eaafb41b8fdeec27043ee58019abe7f143909bd2a28), vault 0→100
+  3. vault ERC-6909 approve — `0xcf4fadca72605282f23df8a6033044ca402ac09ff80125ce94987c5100dea421`
+  4. `predict buy 0 yes 2` (success, block 70202021, gas 352595) —
+     [`0x14bbadb4…e768`](https://testnet.monadexplorer.com/tx/0x14bbadb455df16f5b639873e31b0a3f9be5a195094013802a5eac111a487e768),
+     position YES=2, vault 100→**61.3275084** $P.
+  The 38.6724916 $P spend equals the plugin's own `popo quote` exact curve
+  cost to the wei; `mm popo position 0` reports `yesShares = 2`. This proves
+  reads, quoting, EIP-712 faucet auth, approve/deposit and both internal-vault
+  settlement and the ERC-6909 accounting all work through the guarded Agent
+  Wallet — no key ever leaves MetaMask.
+
+### Monad testnet RPC support added (`customEvmChains`)
+
+10143 is in the Agent Wallet registry but ships without an RPC config and its
+hosted GasFeeController/EVM gateway returns `400 Invalid chainId`. We added the
+network once to `~/.metamask/wallets.json` → `data.customEvmChains` with an
+explicit `rpcTarget: https://testnet-rpc.monad.xyz` (plus caip2/native currency/
+explorer). The plugin also supplies EIP-1559 `maxFeePerGas` /
+`maxPriorityFeePerGas` (base fee ×2 + 2 gwei tip) and a +30% gas estimate from
+the public RPC, because remote signing is EIP-1559-only and must never call the
+hosted gas API on 10143. Verified by `mm wallet balance --chain 10143` reading
+live MON over the public RPC. The first on-chain approval also surfaced the
+warning-level “Trust Monad Testnet / new network” guard policy, acknowledged
+once; shield-scan-unavailable is informational.
 
 ### CLI 7.1.0 compatibility fixed in the plugin
 
@@ -113,7 +151,8 @@ markets → quote → deposit → predict/trade → position → sell
 - All transactions via Agent Wallet; multiple actions beyond a simple swap
   (deposit, two trading surfaces, quoting, positions).
 - Public GitHub + README with install/run steps — *(link to insert)*.
-- ≤2 min demo video — *(link to insert)*: `mm popo markets`, `faucet`
-  (Agent Wallet EIP-712 signature), `deposit`,
-  `predict --side buy --market 0 --outcome yes --amount 5` (MFA approval
-  shown), `position`, `predict --side sell …`.
+- ≤5 min **required** demo video — *(link to insert)*: `mm popo markets`, `faucet`
+  (Agent Wallet EIP-712 signature), `deposit 100`,
+  `predict buy 0 yes 2` (per-tx email MFA approval + “trust network” guard
+  shown), `position 0` (YES=2), `vault`, and the explorer tx pages — matching
+  the live hashes above.
