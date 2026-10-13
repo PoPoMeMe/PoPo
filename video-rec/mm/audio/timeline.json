@@ -1,0 +1,137 @@
+{
+  "total": 147.644,
+  "backend": "volc:en_female_pleasant-female_uranus_bigtts@1.05x",
+  "voice": "volc:en_female_pleasant-female_uranus_bigtts@1.05x",
+  "speed": 1.05,
+  "leadIn": 1,
+  "gap": 0.6,
+  "tail": 2.5,
+  "beats": [
+    {
+      "id": "01-intro",
+      "kicker": "PoPo.meme × MetaMask Agent Wallet",
+      "title": "A trader CLI plugin, fully guarded",
+      "bullets": [
+        "Monad testnet · chainId 10143",
+        "Every write routed through Agent Wallet",
+        "Signing, policy and MFA are never bypassed"
+      ],
+      "narration": "This is PoPo dot meme on Monad testnet, and an installable command-line plugin for the MetaMask Agent Wallet. It turns our prediction and meme-coin trading venue into trader commands, while every signature and transaction is enforced by the Agent Wallet itself.",
+      "start": 1,
+      "duration": 19.536009,
+      "end": 20.536
+    },
+    {
+      "id": "02-read",
+      "kicker": "Public read commands",
+      "title": "Markets without a login",
+      "bullets": [
+        "mm popo markets",
+        "mm popo quote",
+        "vault & position reads via public RPC"
+      ],
+      "narration": "Read-only commands such as markets, quote, vault and position run against a public Monad RPC. They need no key and no login, so an agent can inspect the venue safely before asking the wallet to do anything.",
+      "start": 21.136,
+      "duration": 16.248005,
+      "end": 37.384
+    },
+    {
+      "id": "03-quote",
+      "kicker": "Exact off-chain quote",
+      "title": "Quote matches the fill, wei for wei",
+      "bullets": [
+        "buy 1 NO share",
+        "12.044998 P dollars quoted",
+        "matched on-chain after the fill"
+      ],
+      "narration": "Before a trade, the plugin prices the bonding curve locally. Here, one NO share costs about twelve P dollars. After the fill we will check that the vault balance changes by exactly this amount, wei for wei.",
+      "start": 37.984,
+      "duration": 15.72,
+      "end": 53.704
+    },
+    {
+      "id": "04-guard",
+      "kicker": "Guard mode · strict policy",
+      "title": "Nothing is whitelisted",
+      "bullets": [
+        "trading mode = guard",
+        "empty address allowlist",
+        "chain 10143 not pre-approved · 24h limit 0"
+      ],
+      "narration": "Crucially, the wallet is in guard mode with a strict policy. The allowlist is empty, Monad testnet is not pre-approved, and the rolling spend limit is zero. We are not using beast mode and we never whitelist our own contracts.",
+      "start": 54.304,
+      "duration": 15.863991,
+      "end": 70.168
+    },
+    {
+      "id": "05-deposit",
+      "kicker": "Write #1 · deposit",
+      "title": "An email MFA is mandatory",
+      "bullets": [
+        "mm popo deposit 25",
+        "AWAITING_MFA · approval request",
+        "owner confirms by email → broadcast"
+      ],
+      "narration": "Now a real write: deposit twenty-five P dollars from the ERC20 wallet into the trading vault. The command pauses at awaiting MFA. The owner opens the email, approves the exact request, and only then is the transaction signed and broadcast.",
+      "start": 70.768,
+      "duration": 17.4,
+      "end": 88.168
+    },
+    {
+      "id": "06-buy",
+      "kicker": "Write #2 · predict buy",
+      "title": "A second MFA for the trade",
+      "bullets": [
+        "mm popo predict buy 0 no 1",
+        "a fresh approval email",
+        "no automatic replay of consent"
+      ],
+      "narration": "The second write buys one NO share. It triggers a brand-new approval email. Each transaction needs its own human confirmation, so consent can never be silently replayed by the plugin or an agent.",
+      "start": 88.768,
+      "duration": 13.751995,
+      "end": 102.52
+    },
+    {
+      "id": "07-verify",
+      "kicker": "On-chain verification",
+      "title": "Position and vault reconciled",
+      "bullets": [
+        "NO shares 0 → 1",
+        "vault spends exactly the quoted cost",
+        "success receipt on the explorer"
+      ],
+      "narration": "After approval, the receipt succeeds. The position now holds one NO share, and the vault has spent exactly the quoted price. The explorer confirms the transaction and gas used.",
+      "start": 103.12,
+      "duration": 13.151995,
+      "end": 116.272
+    },
+    {
+      "id": "08-envio",
+      "kicker": "Composability",
+      "title": "The same trade lands in HyperIndex",
+      "bullets": [
+        "Envio PredictionTrade row",
+        "indexed in the same block",
+        "one trade, two bounty surfaces"
+      ],
+      "narration": "The same trade is immediately ingested by our Envio HyperIndex indexer as a PredictionTrade row in the same block, showing how the plugin composes with an indexed, analytics-ready backend.",
+      "start": 116.872,
+      "duration": 13.368005,
+      "end": 130.24
+    },
+    {
+      "id": "09-close",
+      "kicker": "Summary",
+      "title": "Powerful for agents, safe by default",
+      "bullets": [
+        "installable oclif plugin · 9 commands",
+        "no private keys or tokens handled",
+        "no bypass of signing, policy or MFA"
+      ],
+      "narration": "An installable plugin with nine commands, zero key handling by us, and every write gated by Agent Wallet signing, policy and email MFA. Powerful for agents, safe by default. Thank you.",
+      "start": 130.84,
+      "duration": 14.303991,
+      "end": 145.144
+    }
+  ]
+}

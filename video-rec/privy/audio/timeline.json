@@ -1,0 +1,53 @@
+{
+  "total": 99.836,
+  "backend": "volc:en_female_pleasant-female_uranus_bigtts@1.05x",
+  "voice": "volc:en_female_pleasant-female_uranus_bigtts@1.05x",
+  "speed": 1.05,
+  "leadIn": 1,
+  "gap": 0.6,
+  "tail": 2.5,
+  "beats": [
+    {
+      "id": "01-intro",
+      "narration": "This is PoPo dot meme on Monad testnet, powered by Privy embedded wallets. The user signed in with their account and got a self-custodial embedded wallet, zero x two seven seven two, shown right in the sidebar with an on-chain vault balance.",
+      "start": 1,
+      "duration": 17.208005,
+      "end": 18.208
+    },
+    {
+      "id": "02-wallet",
+      "narration": "Opening the wallet menu shows the embedded address, copy and explorer actions, and deposit and withdraw flows. It is a real on-chain account holding Monad testnet gas, not a custodial ledger on our backend.",
+      "start": 18.808,
+      "duration": 14.256009,
+      "end": 33.064
+    },
+    {
+      "id": "03-market",
+      "narration": "All business actions run through this Privy wallet. Here on the Monad prediction market, the vault already holds P dollars, so we can trade a prediction outcome directly. We open a live market and choose to buy one YES share.",
+      "start": 33.664,
+      "duration": 14.663991,
+      "end": 48.328
+    },
+    {
+      "id": "04-approve",
+      "narration": "Privy shows its native approve-transaction dialog: the target contract, Monad Testnet network, estimated fee, and the embedded signer. Nothing is auto-approved. The user clicks Approve to sign and send the transaction.",
+      "start": 48.928,
+      "duration": 15.456009,
+      "end": 64.384
+    },
+    {
+      "id": "05-confirmed",
+      "narration": "The signed transaction is broadcast to Monad and confirmed on-chain. The recent-trades feed shows the new position from zero x two seven seven two. Every signature and every write was produced by the Privy embedded wallet.",
+      "start": 64.984,
+      "duration": 14.928005,
+      "end": 79.912
+    },
+    {
+      "id": "06-close",
+      "narration": "For off-chain writes we also use Privy with EIP seven one two typed-data signatures verified server-side, and external wallets are used only for topping up. Privy embedded wallets are the single signing path across the whole app. Thank you.",
+      "start": 80.512,
+      "duration": 16.823991,
+      "end": 97.336
+    }
+  ]
+}

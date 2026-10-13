@@ -1,0 +1,5 @@
+# recording artifacts (kept locally only)
+**/frames/
+**/out/raw-*.mp4
+**/config.js
+*.pyc

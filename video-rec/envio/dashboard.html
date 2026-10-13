@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=1440"/>
+<title>PoPo.meme × Envio HyperIndex</title>
+<style>
+  :root{
+    --bg:#070b14; --panel:#0d1524; --line:#1c2940; --cyan:#38dbea;
+    --txt:#e9f0f8; --mut:#93a3bb; --green:#4ade80; --amber:#fbbf24; --violet:#a78bfa;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:1440px;height:900px;overflow:hidden;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .mono{font-family:"SF Mono",Menlo,Consolas,monospace;}
+  .app{width:1440px;height:900px;padding:34px 40px;display:flex;flex-direction:column;gap:20px;
+    background:radial-gradient(1100px 500px at 80% -10%, rgba(56,219,234,.08), transparent 60%),
+               radial-gradient(900px 500px at -10% 110%, rgba(167,139,250,.08), transparent 60%),var(--bg);}
+  .hd{display:flex;align-items:flex-start;justify-content:space-between;}
+  .kick{color:var(--cyan);font-weight:800;letter-spacing:.18em;font-size:15px;text-transform:uppercase}
+  h1{font-size:38px;margin-top:6px;letter-spacing:-.5px}
+  .sub{color:var(--mut);font-size:16px;margin-top:6px}
+  .live{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--panel);
+    border-radius:12px;padding:12px 16px;font-size:13px}
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(74,222,128,.7);animation:pulse 1.8s infinite}
+  @keyframes pulse{70%{box-shadow:0 0 0 12px rgba(74,222,128,0)}100%{box-shadow:0 0 0 0 rgba(74,222,128,0)}}
+  .live .mono{color:var(--mut)}
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+  .card{background:linear-gradient(180deg,#101a2c,#0b1322);border:1px solid var(--line);border-radius:16px;padding:20px 22px;position:relative;overflow:hidden}
+  .card::after{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;background:rgba(56,219,234,.08)}
+  .card .lbl{color:var(--mut);font-size:13px;text-transform:uppercase;letter-spacing:.12em;font-weight:700}
+  .card .num{font-size:46px;font-weight:800;margin-top:8px;font-family:"SF Mono",Menlo,monospace;letter-spacing:-1px}
+  .card .em{font-size:12px;color:var(--mut);margin-top:6px}
+  .grid{flex:1;display:grid;grid-template-columns:1.35fr .9fr;gap:18px;min-height:0}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;min-height:0}
+  .panel h2{font-size:15px;text-transform:uppercase;letter-spacing:.12em;color:var(--mut);margin-bottom:12px;display:flex;justify-content:space-between}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{text-align:left;color:var(--mut);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;padding:6px 8px;border-bottom:1px solid var(--line)}
+  td{padding:9px 8px;border-bottom:1px solid #141f33;white-space:nowrap}
+  tr.hl{background:rgba(56,219,234,.08);box-shadow:inset 3px 0 0 var(--cyan)}
+  tr.hl td:first-child{position:relative}
+  .tag{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.06em;padding:2px 7px;border-radius:6px;margin-left:8px;vertical-align:middle}
+  .tag.agent{background:rgba(56,219,234,.16);color:var(--cyan);border:1px solid rgba(56,219,234,.4)}
+  .side{font-weight:700}
+  .side.buy{color:var(--green)} .side.sell{color:#fb7185}
+  .out-yes{color:var(--green)} .out-no{color:var(--amber)}
+  .tx{color:var(--vault)} .tx{color:#7dd3fc}
+  .schema .ent{display:flex;align-items:center;justify-content:space-between;background:#0b1322;border:1px solid var(--line);
+    border-radius:10px;padding:11px 14px;margin-bottom:10px}
+  .schema .ent b{font-family:"SF Mono",Menlo,monospace;font-size:14px}
+  .schema .ent span{color:var(--mut);font-size:12px;font-family:"SF Mono",Menlo,monospace}
+  .chain{margin-top:auto;display:flex;gap:10px;flex-wrap:wrap}
+  .chip{font-size:12px;color:var(--mut);border:1px solid var(--line);border-radius:999px;padding:6px 12px;background:#0b1322}
+  .chip b{color:var(--txt)}
+  .q{background:#080d18;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:12px;color:#9fd7e6;margin-top:12px}
+  .q .k{color:var(--violet)}
+  .flash{animation:flash .9s ease}
+  @keyframes flash{0%{background:rgba(56,219,234,.22)}100%{background:transparent}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hd">
+    <div>
+      <div class="kick">PoPo.meme × Envio HyperIndex</div>
+      <h1>On-chain activity, indexed into a real-time GraphQL API</h1>
+      <div class="sub">Monad testnet · chainId <b>10143</b> · entities for meme coins, traders, hatch trades and prediction markets</div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:flex-start">
+    <button id="rawbtn" style="background:#0d1524;color:var(--cyan);border:1px solid var(--line);border-radius:10px;padding:12px 16px;font-weight:700;font-size:13px;cursor:pointer">View raw GraphQL JSON</button>
+    <div class="live">
+      <span class="dot"></span>
+      <div>
+        <div style="color:var(--green);font-weight:700">Live GraphQL</div>
+        <div class="mono">localhost:8080/v1/graphql</div>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <div id="rawpanel" style="display:none;position:fixed;inset:34px 40px;z-index:30;background:#080d18;border:1px solid var(--cyan);border-radius:16px;padding:22px 26px;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,.6)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="mono" style="color:#7dd3fc;font-size:14px">POST localhost:8080/v1/graphql → live response</div>
+      <button id="rawclose" style="background:transparent;color:var(--mut);border:1px solid var(--line);border-radius:8px;padding:6px 14px;cursor:pointer">Close</button>
+    </div>
+    <pre id="rawjson" class="mono" style="flex:1;overflow:auto;font-size:14px;line-height:1.55;color:#cde7d8;margin:0;white-space:pre"></pre>
+  </div>
+
+  <div class="cards">
+    <div class="card"><div class="lbl">Memecoins</div><div class="num" id="c-coins">–</div><div class="em">ERC6909 hatch tokens indexed</div></div>
+    <div class="card"><div class="lbl">Traders</div><div class="num" id="c-traders">–</div><div class="em">unique on-chain actors</div></div>
+    <div class="card"><div class="lbl">Hatch trades</div><div class="num" id="c-hatch">–</div><div class="em">buy / sell events</div></div>
+    <div class="card"><div class="lbl">Prediction markets</div><div class="num" id="c-markets">–</div><div class="em">markets + positions + trades</div></div>
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <h2><span>Recent PredictionTrades</span><span class="mono" style="text-transform:none;letter-spacing:0;color:#7dd3fc">order_by block desc</span></h2>
+      <div style="overflow:hidden">
+      <table>
+        <thead><tr><th>Side</th><th>Outcome</th><th>Shares</th><th>Block</th><th>Transaction</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+      </div>
+      <div class="q mono">
+        <span class="k">query</span> { PredictionTrade(limit: 8, order_by: {blockNumber: desc}) { side outcome shares blockNumber transactionHash } }
+      </div>
+    </div>
+    <div class="panel schema">
+      <h2>Indexed entities</h2>
+      <div class="ent"><b>Trader</b><span id="s-trader">–</span></div>
+      <div class="ent"><b>Memecoin</b><span id="s-coin">–</span></div>
+      <div class="ent"><b>MemecoinHolder</b><span>snapshot</span></div>
+      <div class="ent"><b>HatchTrade</b><span id="s-hatch">– rows</span></div>
+      <div class="ent"><b>PredictionMarket</b><span id="s-market">–</span></div>
+      <div class="ent"><b>PredictionPosition</b><span>per trader</span></div>
+      <div class="ent"><b>PredictionTrade</b><span id="s-ptrade">– rows</span></div>
+      <div class="chain">
+        <div class="chip">chain <b>10143</b></div>
+        <div class="chip">start_block <b>70016287</b></div>
+        <div class="chip">HyperIndex</div>
+        <div class="chip">Hasura</div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const GQL="http://localhost:8080/v1/graphql";
+const AGENT="0x784d7597285b1ada20b365b39b4b451666b6765190e55b5822023410da0e3020";
+async function g(q){const r=await fetch(GQL,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({query:q})});const j=await r.json();if(j.errors)throw j.errors[0];return j.data;}
+async function count(t){return (await g("{ "+t+" { id } }"))[t].length;}
+function short(h){return h.slice(0,10)+"…"+h.slice(-6);}
+async function tick(flash){
+  const [coins,traders,hatch,markets,pt] = await Promise.all([
+    count("Memecoin"),count("Trader"),count("HatchTrade"),count("PredictionMarket"),count("PredictionTrade")
+  ]);
+  const set=(id,v)=>{const e=document.getElementById(id);const n=String(v);if(e.textContent!==n){e.textContent=n;if(flash)e.classList.remove("flash"),void e.offsetWidth,e.classList.add("flash");}};
+  set("c-coins",coins);set("c-traders",traders);set("c-hatch",hatch);set("c-markets",markets);
+  set("s-trader",traders);set("s-coin",coins);set("s-hatch",hatch);set("s-market",markets);set("s-ptrade",pt);
+  const trades=(await g("{ PredictionTrade(limit:8, order_by:{blockNumber:desc}){ side outcome shares blockNumber transactionHash } }")).PredictionTrade;
+  const tb=document.getElementById("rows");
+  tb.innerHTML=trades.map(t=>{
+    const isAgent=t.transactionHash.toLowerCase()===AGENT;
+    return `<tr class="${isAgent?"hl":""}">
+      <td class="side ${t.side}">${t.side.toUpperCase()}${isAgent?'<span class="tag agent">AGENT WALLET PLUGIN</span>':''}</td>
+      <td class="out-${t.outcome}">${t.outcome.toUpperCase()}</td>
+      <td>${t.shares}</td>
+      <td class="mono">${t.blockNumber}</td>
+      <td class="tx mono">${short(t.transactionHash)}</td>
+    </tr>`;
+  }).join("");
+}
+async function showRaw(){
+  const d=await g("{ PredictionTrade(limit:4, order_by:{blockNumber:desc}){ side outcome shares blockNumber transactionHash } }");
+  document.getElementById("rawjson").textContent=JSON.stringify(d,null,2);
+  document.getElementById("rawpanel").style.display="flex";
+}
+document.getElementById("rawbtn").onclick=showRaw;
+document.getElementById("rawclose").onclick=()=>document.getElementById("rawpanel").style.display="none";
+tick(false);setInterval(()=>tick(true),3000);
+</script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+{
+  "total": 102.956,
+  "backend": "volc:en_female_pleasant-female_uranus_bigtts@1.05x",
+  "voice": "volc:en_female_pleasant-female_uranus_bigtts@1.05x",
+  "speed": 1.05,
+  "leadIn": 1,
+  "gap": 0.6,
+  "tail": 2.5,
+  "beats": [
+    {
+      "id": "01-intro",
+      "narration": "This is how PoPo dot meme uses Envio HyperIndex on Monad testnet, chain id ten fourteen three. Every meme coin and every prediction-market trade is indexed in real time into a typed GraphQL API, ready for analytics and frontends.",
+      "start": 1,
+      "duration": 17.591995,
+      "end": 18.592
+    },
+    {
+      "id": "02-config",
+      "narration": "It starts with a declarative config. One EIP twenty-five thirty-five Diamond hosts both our Hatch bonding-curve facets and the prediction-market facet, so the two indexer entries point at the same address but subscribe to different event signatures.",
+      "start": 19.192,
+      "duration": 15.696009,
+      "end": 34.888
+    },
+    {
+      "id": "03-impl",
+      "narration": "The GraphQL schema defines typed entities such as Trader, Memecoin, HatchTrade and PredictionTrade. TypeScript event handlers decode each event, keep all dollar-P amounts as raw eighteen-decimal big integers, and write a row that is immediately queryable.",
+      "start": 35.488,
+      "duration": 18.911995,
+      "end": 54.4
+    },
+    {
+      "id": "04-stats",
+      "narration": "The live dashboard reads straight from the Hasura GraphQL endpoint. Right now it has indexed sixty-one meme coins, twenty-four traders, seven hundred and four hatch trades, and seven prediction markets.",
+      "start": 55,
+      "duration": 13.896009,
+      "end": 68.896
+    },
+    {
+      "id": "05-trades",
+      "narration": "Here are the latest PredictionTrade rows, newest block first. The highlighted row is the exact transaction our MetaMask Agent Wallet plugin signed and broadcast, proving one on-chain action lands in both the trader CLI and the indexed backend. This is the raw GraphQL response, no mock data.",
+      "start": 69.496,
+      "duration": 21.6,
+      "end": 91.096
+    },
+    {
+      "id": "06-close",
+      "narration": "With Envio HyperIndex, PoPo dot meme turns raw Diamond events into a real-time, composable GraphQL API. Thank you.",
+      "start": 91.696,
+      "duration": 8.76,
+      "end": 100.456
+    }
+  ]
+}

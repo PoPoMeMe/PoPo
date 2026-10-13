@@ -1,0 +1,28 @@
+{
+  "speed": 1.05,
+  "leadIn": 1.0,
+  "gap": 0.6,
+  "tail": 2.5,
+  "beats": [
+    {
+      "id": "01-intro",
+      "narration": "This is how PoPo dot meme uses Alchemy on Monad testnet, chain id ten fourteen three. We use Alchemy in two ways: a Supernode JSON-RPC endpoint for reliable reads and writes, and Alchemy's enhanced token APIs for the wallet surface."
+    },
+    {
+      "id": "02-supernode",
+      "narration": "The Supernode is prepended as the highest-priority RPC in our viem and Privy endpoint list. The public Monad RPC and dRPC stay as automatic fallbacks, so if Alchemy is unreachable the app keeps working. A live eth_chainId call returns zero x two seven nine f, which is ten fourteen three."
+    },
+    {
+      "id": "03-balance",
+      "narration": "For balances we call alchemy_getTokenBalances instead of scanning getLogs ourselves, which matters because Monad limits the block range of eth_getLogs. The Agent Wallet currently holds nine hundred ninety-nine thousand eight hundred twenty-five P dollars; the panel reads the raw eighteen-decimal value and formats it."
+    },
+    {
+      "id": "04-transfers",
+      "narration": "alchemy_getAssetTransfers powers the activity feed. The first row is the real testnet faucet mint: one million P dollars sent from the zero address to the Agent Wallet in block seven million seventeen thousand five hundred forty-seven. On the right are the actual JSON-RPC responses, no mocked data."
+    },
+    {
+      "id": "05-close",
+      "narration": "Everything is environment-gated: without the API key the app falls back to the original public RPCs exactly, so adding Alchemy never breaks existing behavior. Reliable Supernode RPC plus enhanced token data on Monad. Thank you."
+    }
+  ]
+}

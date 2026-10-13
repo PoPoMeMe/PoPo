@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>PoPo.meme × Alchemy</title>
+<script src="config.js"></script>
+<style>
+  :root{--bg:#070b14;--panel:#0d1524;--line:#1c2940;--cyan:#38dbea;--txt:#e9f0f8;--mut:#93a3bb;
+    --green:#4ade80;--amber:#fbbf24;--blue:#60a5fa;--violet:#a78bfa;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:1440px;height:900px;overflow:hidden;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .mono{font-family:"SF Mono",Menlo,Consolas,monospace}
+  .app{width:1440px;height:900px;padding:32px 40px;display:flex;flex-direction:column;gap:18px;
+    background:radial-gradient(1000px 460px at 85% -10%,rgba(96,165,250,.12),transparent 60%),
+               radial-gradient(800px 420px at -8% 108%,rgba(56,219,234,.08),transparent 60%),var(--bg);}
+  .hd{display:flex;justify-content:space-between;align-items:flex-start}
+  .kick{color:var(--blue);font-weight:800;letter-spacing:.18em;font-size:15px;text-transform:uppercase}
+  h1{font-size:36px;margin-top:5px;letter-spacing:-.4px}
+  .sub{color:var(--mut);font-size:15px;margin-top:5px}
+  .live{display:flex;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 16px;font-size:13px}
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--green);animation:pulse 1.8s infinite}
+  @keyframes pulse{70%{box-shadow:0 0 0 12px rgba(74,222,128,0)}100%{box-shadow:0 0 0 0 rgba(74,222,128,0)}}
+  .grid{flex:1;display:grid;grid-template-columns:1.05fr .95fr;grid-template-rows:auto 268px minmax(0,1fr);gap:16px;min-height:0}
+  .rpc{grid-column:1 / span 2;grid-row:1;display:flex;gap:14px}
+  .rpc .chip{flex:1;background:linear-gradient(180deg,#101a2c,#0b1322);border:1px solid var(--line);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:14px}
+  .rpc .ic{width:40px;height:40px;border-radius:10px;background:rgba(96,165,250,.15);display:flex;align-items:center;justify-content:center;font-size:20px}
+  .rpc .k{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em;font-weight:700}
+  .rpc .v{font-size:15px;margin-top:3px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;min-height:0;grid-row:2;overflow:hidden}
+  .panel h2{font-size:14px;text-transform:uppercase;letter-spacing:.12em;color:var(--mut);margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+  .tagm{font-size:10.5px;font-weight:800;letter-spacing:.05em;padding:3px 8px;border-radius:6px;background:rgba(96,165,250,.15);color:var(--blue);border:1px solid rgba(96,165,250,.4);text-transform:none}
+  .balance{display:flex;align-items:baseline;gap:14px}
+  .balance .num{font-size:58px;font-weight:800;font-family:"SF Mono",Menlo,monospace;letter-spacing:-1px}
+  .balance .unit{font-size:22px;color:var(--mut);font-weight:700}
+  .addr{margin-top:8px;font-size:13px;color:var(--mut)}
+  .addr b{color:#9fd0ff}
+  .raw{margin-top:14px;background:#080d18;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:12px;color:#7dd3fc;word-break:break-all}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.06em;padding:6px 6px;border-bottom:1px solid var(--line)}
+  td{padding:10px 6px;border-bottom:1px solid #141f33;white-space:nowrap}
+  .scroll{overflow:hidden}
+  .kind{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:6px}
+  .kind.mint{background:rgba(74,222,128,.15);color:var(--green)}
+  .kind.in{background:rgba(56,219,234,.15);color:var(--cyan)}
+  .code{grid-column:1 / span 2;grid-row:3;background:#080d18;border:1px solid var(--line);border-radius:14px;padding:0;display:flex;min-height:0;overflow:hidden}
+  .code .gutter{width:54px;background:#0b1322;border-right:1px solid var(--line);padding:16px 0;text-align:right}
+  .code .gutter div{height:27px;font-family:"SF Mono",Menlo,monospace;font-size:14px;color:#3a4a63;padding-right:12px}
+  .code pre{padding:16px 20px;font-family:"SF Mono",Menlo,monospace;font-size:15px;line-height:1.8;color:#cdddf0;white-space:pre;overflow:hidden}
+  .cm{color:#5f7290}.kw{color:#c4b5fd}.st{color:#9ae6b4}.fn{color:#7dd3fc}.numc{color:#fbbf24}
+  .btnrow{position:absolute}
+  button.tabbtn{background:#0b1322;border:1px solid var(--line);color:var(--mut);border-radius:9px;padding:7px 13px;font-size:12.5px;cursor:pointer;margin-left:8px}
+  button.tabbtn.on{background:rgba(96,165,250,.14);border-color:var(--blue);color:var(--blue)}
+  #rawpanel{display:none;position:fixed;inset:30px 40px;z-index:40;background:#080d18;border:1px solid var(--blue);border-radius:16px;padding:20px 24px;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,.6)}
+  #rawpanel .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  #rawjson{flex:1;overflow:auto;font-family:"SF Mono",Menlo,monospace;font-size:13.5px;line-height:1.55;color:#cde7d8;white-space:pre}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hd">
+    <div>
+      <div class="kick">PoPo.meme × Alchemy</div>
+      <h1>Supernode RPC + Enhanced APIs on Monad testnet</h1>
+      <div class="sub">Env-gated integration · chainId <b>10143</b> · primary endpoint with public-RPC &amp; dRPC fallback</div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="tabbtn" id="rawbtn">View raw JSON-RPC</button>
+      <div class="live"><span class="dot"></span><div><div style="color:var(--green);font-weight:700">Live Supernode</div><div class="mono">monad-testnet.g.alchemy.com</div></div></div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="rpc">
+      <div class="chip"><div class="ic">⛓️</div><div><div class="k">Chain id · eth_chainId</div><div class="v mono" id="chain">…</div></div></div>
+      <div class="chip"><div class="ic">🪙</div><div><div class="k">$P token (USDPApp)</div><div class="v mono" id="ptoken">…</div></div></div>
+      <div class="chip"><div class="ic">🛡️</div><div><div class="k">PoPoApp Diamond</div><div class="v mono" id="diamond">…</div></div></div>
+      <div class="chip"><div class="ic">🔁</div><div><div class="k">RPC strategy</div><div class="v">Alchemy → public → dRPC</div></div></div>
+    </div>
+
+    <div class="panel">
+      <h2>Wallet $P balance <span class="tagm">alchemy_getTokenBalances</span></h2>
+      <div class="balance"><span class="num" id="bal">…</span><span class="unit">$P</span></div>
+      <div class="addr">Agent Wallet <b class="mono" id="waddr"></b></div>
+      <div class="raw mono" id="balraw">loading…</div>
+    </div>
+
+    <div class="panel">
+      <h2>Recent $P transfers <span class="tagm">alchemy_getAssetTransfers</span></h2>
+      <div class="scroll">
+      <table>
+        <thead><tr><th>Type</th><th>Block</th><th>From</th><th>To</th><th>Value (raw)</th><th>Tx</th></tr></thead>
+        <tbody id="rows"><tr><td colspan=6 style="color:var(--mut)">loading…</td></tr></tbody>
+      </table>
+      </div>
+    </div>
+
+    <div class="code">
+      <div class="gutter" id="gutter"></div>
+      <pre id="code"></pre>
+    </div>
+  </div>
+</div>
+
+<div id="rawpanel">
+  <div class="top">
+    <div class="mono" style="color:#7dd3fc;font-size:14px">POST monad-testnet.g.alchemy.com/v2/<i>&lt;key&gt;</i> — live responses</div>
+    <button class="tabbtn" id="rawclose">Close</button>
+  </div>
+  <pre id="rawjson"></pre>
+</div>
+
+<script>
+const RPC=window.ALCHEMY_RPC, P=window.POPO;
+async function rpc(method,params){
+  const r=await fetch(RPC,{method:"POST",headers:{"content-type":"application/json"},
+    body:JSON.stringify({jsonrpc:"2.0",id:1,method,params})});
+  return await r.json();
+}
+const hex2dec=h=>BigInt(h).toString();
+const fmtP=raw=>Number(BigInt(raw)/1000000000000000000n).toLocaleString("en-US");
+const short=a=>a.slice(0,8)+"…"+a.slice(-6);
+document.getElementById("waddr").textContent=P.wallet;
+document.getElementById("ptoken").textContent=P.pToken;
+document.getElementById("diamond").textContent=P.diamond;
+
+const CODE=`
+<span class="cm">// src/lib/alchemy.ts — env-gated, no key = original behaviour</span>
+<span class="kw">export const</span> alchemyMonadRpcUrl =
+  <span class="st">\`https://monad-testnet.g.alchemy.com/v2/\${apiKey}\`</span>;
+
+<span class="kw">export function</span> <span class="fn">monadRpcList</span>() {
+  <span class="kw">return</span> alchemyEnabled
+    ? [alchemyMonadRpcUrl, PUBLIC_MONAD_RPC, DRPC]  <span class="cm">// Supernode first</span>
+    : [PUBLIC_MONAD_RPC, DRPC];
+}
+
+<span class="cm">// Enhanced API: wallet $P balance without getLogs-heavy scanning</span>
+<span class="kw">const</span> bal = <span class="kw">await</span> <span class="fn">alchemyCall</span>(<span class="st">"alchemy_getTokenBalances"</span>,
+  [wallet, [P_TOKEN]]);
+
+<span class="cm">// Enhanced API: real ERC-20 activity feed on Monad</span>
+<span class="kw">const</span> tx = <span class="kw">await</span> <span class="fn">alchemyCall</span>(<span class="st">"alchemy_getAssetTransfers"</span>, [{
+  category: [<span class="st">"erc20"</span>], toAddress: wallet,
+  contractAddresses: [P_TOKEN], order: <span class="st">"desc"</span>, maxCount: <span class="st">"0x32"</span>,
+}]);`;
+document.getElementById("code").innerHTML=CODE;
+const lines=CODE.split("\n").length-1;
+document.getElementById("gutter").innerHTML=Array.from({length:lines},(_,i)=>`<div>${i+1}</div>`).join("");
+
+async function load(){
+  const chain=await rpc("eth_chainId",[]);
+  document.getElementById("chain").textContent=chain.result+"  ("+parseInt(chain.result,16)+")";
+
+  const bal=await rpc("alchemy_getTokenBalances",[P.wallet,[P.pToken]]);
+  const raw=bal.result.tokenBalances[0].tokenBalance;
+  document.getElementById("bal").textContent=fmtP(raw);
+  document.getElementById("balraw").textContent="tokenBalance "+raw+"  =  "+hex2dec(raw)+" (18-dec raw)";
+
+  const tr=await rpc("alchemy_getAssetTransfers",[{fromBlock:"0x0",toBlock:"latest",
+    toAddress:P.wallet,contractAddresses:[P.pToken],category:["erc20"],maxCount:"0x8",order:"desc",withMetadata:false}]);
+  const rows=(tr.result?.transfers||[]).map(t=>{
+    const mint=t.from==="0x0000000000000000000000000000000000000000";
+    return `<tr><td><span class="kind ${mint?'mint':'in'}">${mint?'MINT':'IN'}</span></td>
+      <td class="mono">${parseInt(t.blockNum,16)}</td>
+      <td class="mono">${mint?'0x0…0000':short(t.from)}</td>
+      <td class="mono">${short(t.to)}</td>
+      <td class="mono">${t.rawContract?.value?hex2dec(t.rawContract.value):(t.value??'—')}</td>
+      <td class="mono" style="color:#7dd3fc">${short(t.hash)}</td></tr>`;
+  }).join("");
+  document.getElementById("rows").innerHTML=rows||'<tr><td colspan=6 style="color:var(--mut)">no transfers</td></tr>';
+
+  window.__raw={eth_chainId:chain,alchemy_getTokenBalances:bal,alchemy_getAssetTransfers:tr};
+}
+document.getElementById("rawbtn").onclick=()=>{
+  document.getElementById("rawjson").textContent=JSON.stringify(window.__raw||{note:"loading"},(k,v)=>typeof v==="bigint"?v.toString():v,2);
+  document.getElementById("rawpanel").style.display="flex";
+};
+document.getElementById("rawclose").onclick=()=>document.getElementById("rawpanel").style.display="none";
+load();
+</script>
+</body></html>

@@ -1,0 +1,32 @@
+{
+  "speed": 1.05,
+  "leadIn": 1.0,
+  "gap": 0.6,
+  "tail": 2.5,
+  "beats": [
+    {
+      "id": "01-intro",
+      "narration": "This is PoPo dot meme on Monad testnet, powered by Privy embedded wallets. The user signed in with their account and got a self-custodial embedded wallet, zero x two seven seven two, shown right in the sidebar with an on-chain vault balance."
+    },
+    {
+      "id": "02-wallet",
+      "narration": "Opening the wallet menu shows the embedded address, copy and explorer actions, and deposit and withdraw flows. It is a real on-chain account holding Monad testnet gas, not a custodial ledger on our backend."
+    },
+    {
+      "id": "03-market",
+      "narration": "All business actions run through this Privy wallet. Here on the Monad prediction market, the vault already holds P dollars, so we can trade a prediction outcome directly. We open a live market and choose to buy one YES share."
+    },
+    {
+      "id": "04-approve",
+      "narration": "Privy shows its native approve-transaction dialog: the target contract, Monad Testnet network, estimated fee, and the embedded signer. Nothing is auto-approved. The user clicks Approve to sign and send the transaction."
+    },
+    {
+      "id": "05-confirmed",
+      "narration": "The signed transaction is broadcast to Monad and confirmed on-chain. The recent-trades feed shows the new position from zero x two seven seven two. Every signature and every write was produced by the Privy embedded wallet."
+    },
+    {
+      "id": "06-close",
+      "narration": "For off-chain writes we also use Privy with EIP seven one two typed-data signatures verified server-side, and external wallets are used only for topping up. Privy embedded wallets are the single signing path across the whole app. Thank you."
+    }
+  ]
+}
