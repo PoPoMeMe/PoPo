@@ -224,6 +224,43 @@ npm i && npm run codegen && npm run dev              # Hasura/GraphQL on :8080
 
 ---
 
+## 4e. KIMI — Best Builds Powered by KIMI ($3,000 credits pool)
+
+> **Published article/X thread URL (required):**
+> **https://x.com/PoPoMeMe3000/status/2110057346135433627**
+
+**Required text answer (paste verbatim):**
+
+> PoPo.meme meaningfully integrates KIMI (Moonshot AI) into a core onchain
+> finance workflow on Monad testnet: **creating a prediction market**. A market
+> is only useful if its resolution rule is binary, time-bounded, and backed by
+> a public authoritative source, but that is hard for ordinary users to write.
+> Our KIMI-powered AI market drafter takes one free-form topic and returns
+> strict structured JSON that maps 1:1 onto the on-chain market metadata:
+> title, description, category, objective resolution criteria, resolution
+> source, discovery tags, and an initial lean with reasoning. The frontend
+> calls an authenticated Supabase Edge Function, `prediction-market-draft`,
+> which invokes KIMI's OpenAI-compatible API using `kimi-k2.7-code` with JSON
+> output. The KIMI API key remains server-side; calls require the same Privy
+> session / EIP-712 PoPoAuth signature used across PoPo and are rate limited
+> per wallet. We handle the KIMI plan's concurrency limit with backoff on 429
+> and validate/normalize the model's JSON before rendering it. KIMI is not a
+> generic chat box and cannot move funds or publish markets: it fills a review
+> card, the user edits every field, then signs and pays through Privy, and an
+> admin still reviews the market before enabling it. The endpoint is deployed
+> and the end-to-end flow was verified live on Monad testnet; the linked X
+> thread explains the architecture, value, safety boundaries, and engineering
+> details, and includes a screenshot of the KIMI-generated draft in the live
+> create-market UI.
+
+**Public code references:**
+`app/supabase/functions/prediction-market-draft/index.ts`,
+`app/supabase/functions/_shared/kimi.ts`,
+`app/src/components/prediction/kimi-market-drafter.tsx`,
+`app/src/lib/prediction-market-draft.ts`.
+
+---
+
 ## 5. 主赛道提交（Onchain Finance & Trading）公共素材
 
 - **Live link:** `【LIVE_URL】`（Monad testnet 默认构建；评委登录用邮箱/ passkey，

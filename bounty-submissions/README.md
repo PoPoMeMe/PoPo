@@ -54,6 +54,10 @@ links), `VIDEO-SCRIPT.md` (per-second shot lists for all 6 clips).
 
 ## Recommendation
 
-Hold the line: **track + Privy + Agent Wallet Plugin + Envio + Alchemy** is a
-strong, fully-built story (~$16k eligible). Community skipped.
-Skip Perpl/Nansen/Dynamic/Mera/Agora/KIMI.
+Hold the line: **track + Privy + Agent Wallet Plugin + Envio + Alchemy + KIMI** is a
+strong, fully-built story. Community skipped. Skip Perpl/Nansen/Dynamic/Mera/Agora.
+
+**KIMI is now included (2026-10-13):** real AI market drafter shipped in the core
+prediction-market creation flow on Monad; edge function deployed and verified; English
+X thread published: https://x.com/PoPoMeMe3000/status/2110057346135433627 —
+see `kimi-article-x-thread.md` and `assets/kimi/`.

@@ -1,98 +1,81 @@
 # KIMI bounty — X thread (English, 8 tweets)
 
-> How to use: post tweets 1→8 as one thread (reply each to the previous one).
-> Handles to double-check before posting: @Kimi_Moonshot / @Moonshot_HQ,
-> @monad. Attach the screenshot `kimi-ui-result.png` to tweet 5.
-> Keep every claim live by shipping the frontend before posting (the Edge
-> Function is already deployed).
+> **PUBLISHED 2026-10-13** from PoPo.meme @PoPoMeMe3000.
+> First tweet — use this as the KIMI bounty submission `url`:
+> **https://x.com/PoPoMeMe3000/status/2110057346135433627**
+>
+> Second tweet in the thread:
+> https://x.com/PoPoMeMe3000/status/2110057348404502878
+>
+> Image attached to tweet 1: `assets/kimi/kimi-ui-result.png`.
+> Account confirmed before posting: PoPo.meme (verified) @PoPoMeMe3000.
+> Every tweet was ≤280 chars. No @-mentions were used (official KIMI handle
+> could not be verified), only hashtags.
 
 ---
 
-**Tweet 1 (hook)**
+## Posted text (exact)
 
+**1/**
 We didn't bolt a chatbot onto PoPo.meme.
 
-We put @Kimi_Moonshot's KIMI model inside the core loop: creating a prediction market.
+We put KIMI (Moonshot AI) inside the core loop: creating a prediction market.
 
-Type one rough idea → KIMI drafts an objectively resolvable YES/NO market, ready to go on-chain on @monad testnet.
+One rough idea → KIMI drafts an objectively resolvable YES/NO market, ready to go on-chain on Monad testnet.
 
-Here's how we built it and why it matters 🧵
+How & why 🧵
+*(+ screenshot `assets/kimi/kimi-ui-result.png`)*
 
----
+**2/**
+A market is only as good as its resolution rule.
 
-**Tweet 2 (the problem)**
+"Will X become big?" is untradeable — subjective. A real market needs a binary question, a deadline, and a public source an admin can settle against.
 
-A prediction market is only as good as its resolution rule.
+Most users can't write that. It was our top creation bottleneck.
 
-"Will X become big?" is untradeable — it's subjective.
-A real market needs a binary question, a deadline, and a public, authoritative source an admin can actually settle against.
+**3/**
+KIMI now powers our AI market drafter.
 
-Most users can't write that. That was our biggest market-creation bottleneck.
+IN: one free-form topic ("Will a major AI lab ship a flagship model this month?")
+OUT: strict JSON — title, description, category, objective resolution rule, source, tags.
 
----
+Not a chat window. A structured engine in the create-market form.
 
-**Tweet 3 (what KIMI does)**
+**4/**
+How it's wired:
+• Frontend → Supabase Edge Function "prediction-market-draft"
+• Server-side OpenAI-compatible KIMI call (kimi-k2.7-code, JSON mode)
+• API key never reaches the browser
+• EIP-712 auth via Privy embedded wallet + rate limit
 
-KIMI now powers our "AI market drafter":
+JSON maps 1:1 onto on-chain market meta.
 
-In: a free-form topic ("Will a major AI lab ship a flagship model this month?")
-Out: strict JSON — title, description, category, an objective resolution rule, the authoritative source, tags, and an initial lean with reasoning.
+**5/**
+KIMI enforces settleability:
+• a binary, specific question + deadline
+• an objective public source (official releases / Reuters / Verge)
+• rejects opinion wording
+• picks category + tags
 
-No chat window. A structured engine in the create-market form.
+Blank page → clean, reviewable draft in seconds, with consistent markets for review.
 
----
-
-**Tweet 4 (how it's wired)**
-
-- Frontend → Supabase Edge Function `prediction-market-draft`
-- Server-side OpenAI-compatible call to KIMI (`kimi-k2.7-code`, `response_format: json_object`)
-- Key never touches the browser (env-only)
-- Auth: our standard EIP-712 PoPoAuth signed by the Privy embedded wallet (or a silent session token) + per-wallet rate limit
-
-The JSON maps 1:1 onto the market meta that gets hashed and committed on-chain.
-
----
-
-**Tweet 5 (the value, 1/2)**
-
-KIMI enforces settleability by design:
-• forces a binary, specific question with a deadline
-• names an objective public source (e.g. official lab announcements / Reuters / The Verge)
-• rejects opinion-based wording
-• picks category + discovery tags
-
-Users go from blank page to a clean, reviewable draft in seconds — and market quality/admission is far more consistent for review.
-
-[📸 attach screenshot: kimi-ui-result.png]
-
----
-
-**Tweet 6 (the value, 2/2 — human stays in control)**
-
+**6/**
 AI drafts; the human decides.
 
-Nothing is auto-signed or auto-paid. The user reviews and edits every field, then submits the on-chain transaction through Privy. Markets still go through admin review before going live.
+Nothing is auto-signed or auto-paid. The user reviews and edits every field, then submits the on-chain tx through Privy. Markets still pass admin review before going live.
 
-KIMI removes the writing friction — it never removes the user's or the protocol's control.
+KIMI removes writing friction — not control.
 
----
+**7/**
+Production notes:
+1) KIMI caps org concurrency at 1 → mid-burst 429, so we retry with backoff
+2) the fast reasoning model returns a full structured draft in ~5–30s even from a global edge runtime
 
-**Tweet 7 (engineering notes)**
+Strict JSON parsing + field validation guard bad output.
 
-Two things that made it production-grade:
-1️⃣ org concurrency is capped at 1 → KIMI returns 429 mid-burst; we retry with backoff
-2️⃣ picked the fast reasoning model so a full structured draft returns in ~5–30s even from a global edge runtime, well inside timeout
-
-Strict JSON extraction + field validation also guard against malformed model output.
-
----
-
-**Tweet 8 (close / CTA)**
-
+**8/**
 KIMI turned our hardest onboarding wall — writing a market that can actually be resolved — into a one-line prompt.
 
-Live on Monad testnet in PoPo.meme's create-market flow. Try drafting a market 🔮
-
-Built with @Kimi_Moonshot × @monad
+Live on Monad testnet in PoPo.meme's create-market flow. Go draft a market 🔮
 
 #KIMI #MoonshotAI #Monad #PoPo #AI #predictionmarkets
