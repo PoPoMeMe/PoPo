@@ -29,23 +29,37 @@ def wrap_center(d,text,font,maxw):
             cur=w
     if cur:lines.append(cur)
     return lines
-def bgfile(name,dark=0.80,blur=7,zoomfill=True):
+def bgfile(name,dark=0.20,blur=2,scrim=True):
     im=Image.open(f"{UI}/{name}").convert("RGB")
-    # cover 1920x1080
     r=max(W/im.width,H/im.height)
     im=im.resize((int(im.width*r),int(im.height*r)))
     x=(im.width-W)//2;y=(im.height-H)//2
     im=im.crop((x,y,x+W,y+H))
-    im=im.filter(ImageFilter.GaussianBlur(blur))
+    if blur>0: im=im.filter(ImageFilter.GaussianBlur(blur))
     black=Image.new("RGB",(W,H),DARK)
     im=Image.blend(im,black,dark)
-    # vignette
+    if scrim:
+        # localized soft dark scrim ONLY behind the center text band; UI stays visible elsewhere
+        ov=Image.new("L",(W,H),0); od=ImageDraw.Draw(ov)
+        od.ellipse([W*0.12,H*0.16,W*0.88,H*0.86],fill=int(255*0.80))
+        ov=ov.filter(ImageFilter.GaussianBlur(180))
+        shade=Image.new("RGB",(W,H),(4,5,10))
+        im=Image.composite(shade,im,ov)
+    # mild vignette (keeps corners readable)
     vig=Image.new("L",(W,H),0); vd=ImageDraw.Draw(vig)
-    vd.ellipse([-W*0.25,-H*0.35,W*1.25,H*1.35],fill=255)
-    vig=vig.filter(ImageFilter.GaussianBlur(200))
-    dark2=Image.new("RGB",(W,H),(0,0,0))
-    im=Image.composite(im,dark2,vig.point(lambda p:int(p*0.55+110)))
+    vd.ellipse([-W*0.18,-H*0.28,W*1.18,H*1.28],fill=255)
+    vig=vig.filter(ImageFilter.GaussianBlur(220))
+    im=Image.composite(im,Image.new("RGB",(W,H),(0,0,0)),vig.point(lambda p:int(p*0.72+72)))
     return im
+def left_scrim(im,x0=0,x1=1000,alpha=0.78):
+    g=Image.new("L",(W,H),0); d=ImageDraw.Draw(g)
+    # vertical gradient panel on the left, feathered right edge
+    band=Image.new("L",(x1,H),0); bd=ImageDraw.Draw(band)
+    for xx in range(x1):
+        a=int(255*alpha*min(1,max(0,(x1-xx)/340)))
+        bd.line([(xx,0),(xx,H)],fill=a)
+    g.paste(band,(0,0)); g=g.filter(ImageFilter.GaussianBlur(6))
+    return Image.composite(Image.new("RGB",(W,H),(4,5,10)),im,g)
 def kicker(d,text,col=MAG,y=150,sp=10):
     f=F(AB,26); spaced(d,W/2,y,text.upper(),f,col,sp)
 def big(d,lines,y=470,size=138,gap=18,stroke=4,colors=None):
@@ -53,7 +67,8 @@ def big(d,lines,y=470,size=138,gap=18,stroke=4,colors=None):
     colors=colors or [WHITE]*len(lines)
     for i,(ln,col) in enumerate(zip(lines,colors)):
         yy=y+i*(size+gap)
-        spaced(d,W/2,yy,ln.upper(),f,col,2,anchor="mm")
+        spaced(d,W/2+3,yy+4,ln,f,(0,0,0),2,anchor="mm")  # drop shadow
+        spaced(d,W/2,yy,ln,f,col,2,anchor="mm")
 def progress(d,frac):
     # top thin progress line (like ref)
     d.rectangle([0,0,W,5],fill=(255,255,255,40))
@@ -68,7 +83,9 @@ def chip(d,cx,cy,text,tcol=MAG,fs=34,pad=22):
     d.text((cx,cy-2),text,font=f,fill=tcol,anchor="mm")
 
 # ---- 00 intro ----
-im=bgfile("dash.png",.88); d=ImageDraw.Draw(im,"RGBA"); progress(d,.02); logo(d)
+im=bgfile("dash.png",dark=0.10,blur=1,scrim=False)
+im=left_scrim(im,0,1040,0.80)
+d=ImageDraw.Draw(im,"RGBA"); progress(d,.02); logo(d)
 # two real microdrama posters on the right (FIX / VARMINTS), cover-cropped to portrait
 def poster_card(src,cx,cy,pw=300,ph=400):
     p=Image.open(src).convert("RGB")
@@ -88,6 +105,8 @@ poster_card(f"{UI}/poster1.webp",1640,560)
 # warm glow behind posters
 f=F(IMPACT,118)
 x0=250
+for _tx,_ty,_tc in [(x0,430,"THE NEXT"),(x0,548,"CULT HIT"),(x0,666,"STARTS HERE.")]:
+    spaced(d,_tx+3,_ty+5,_tc,f,(0,0,0),2,anchor="lm")
 spaced(d,x0,430,"THE NEXT",f,WHITE,2,anchor="lm")
 spaced(d,x0,548,"CULT HIT",f,WHITE,2,anchor="lm")
 spaced(d,x0,666,"STARTS HERE.",f,(232,236,244),2,anchor="lm")
@@ -95,40 +114,41 @@ spaced(d,x0,752,"AI-MADE MICRODRAMAS",F(AB,30),MAG,8,anchor="lm")
 im.save(f"{OUT}/s0.png")
 
 # ---- 01 one creator ----
-im=bgfile("hatch.png",.82); d=ImageDraw.Draw(im,"RGBA"); progress(d,.14); logo(d); kicker(d,"AI-made microdramas")
+im=bgfile("hatch.png",dark=.16,blur=2); d=ImageDraw.Draw(im,"RGBA"); progress(d,.14); logo(d); kicker(d,"AI-made microdramas")
 big(d,["ONE CREATOR.","A UNIVERSE."],430,118)
 im.save(f"{OUT}/s1.png")
 
 # ---- 02 launch coin ----
-im=bgfile("createcoin.png",.80); d=ImageDraw.Draw(im,"RGBA"); progress(d,.28); logo(d); kicker(d,"LAUNCH")
+im=bgfile("createcoin.png",dark=.10,blur=1); d=ImageDraw.Draw(im,"RGBA"); progress(d,.28); logo(d); kicker(d,"LAUNCH")
 big(d,["LAUNCH A COIN","FOR EVERY STORY."],430,104)
 im.save(f"{OUT}/s2.png")
 
 # ---- 03 no presale ----
-im=bgfile("createcoin.png",.84); d=ImageDraw.Draw(im,"RGBA"); progress(d,.40); logo(d)
+im=bgfile("createcoin.png",dark=.12,blur=1); d=ImageDraw.Draw(im,"RGBA"); progress(d,.40); logo(d)
 kicker(d,"NO PRESALE")
 big(d,["NO PRESALE.","FAIR LAUNCH."],440,128,colors=[WHITE,MAG])
 im.save(f"{OUT}/s3.png")
 
 # ---- 04 back the story ----
-im=bgfile("preddetail.png",.80); d=ImageDraw.Draw(im,"RGBA"); progress(d,.54); logo(d); kicker(d,"TRADE · UNLOCK · EARN")
+im=bgfile("preddetail.png",dark=.10,blur=1); d=ImageDraw.Draw(im,"RGBA"); progress(d,.54); logo(d); kicker(d,"TRADE · UNLOCK · EARN")
 big(d,["BACK THE STORY","YOU BELIEVE IN."],440,104)
 im.save(f"{OUT}/s4.png")
 
 # ---- 05 every trade on-chain ----
-im=bgfile("predlist.png",.83); d=ImageDraw.Draw(im,"RGBA"); progress(d,.68); logo(d); kicker(d,"LIVE TRADING")
+im=bgfile("predlist.png",dark=.14,blur=2); d=ImageDraw.Draw(im,"RGBA"); progress(d,.68); logo(d); kicker(d,"LIVE TRADING")
 big(d,["EVERY TRADE.","ON-CHAIN."],450,128,colors=[WHITE,CYAN])
 im.save(f"{OUT}/s5.png")
 
 # ---- 06 theories & threads ----
-im=bgfile("hatch.png",.80); d=ImageDraw.Draw(im,"RGBA"); progress(d,.78); logo(d); kicker(d,"FANDOM")
+im=bgfile("hatch.png",dark=.15,blur=2); d=ImageDraw.Draw(im,"RGBA"); progress(d,.78); logo(d); kicker(d,"FANDOM")
 f=F(IMPACT,104); x0=W/2-360; y0=330
 for i,ln in enumerate(["THEORIES.","THREADS.","TRIBES."]):
+    spaced(d,x0+3,y0+i*(104+22)+5,ln,f,(0,0,0),2,anchor="lm")
     spaced(d,x0,y0+i*(104+22),ln,f,WHITE,2,anchor="lm")
 im.save(f"{OUT}/s6.png")
 
 # ---- 07 chips (built on) ----
-im=bgfile("dash.png",.90); d=ImageDraw.Draw(im,"RGBA"); progress(d,.86); logo(d)
+im=bgfile("dash.png",dark=.20,blur=2,scrim=False); d=ImageDraw.Draw(im,"RGBA"); progress(d,.86); logo(d)
 spaced(d,W/2,250,"BUILT ON",F(AB,24),MUT,12,"mm")
 chip(d,W/2,360,"MONAD TESTNET",MAG,40)
 chip(d,W/2,470,"PRIVY WALLETS",CYAN,40)
@@ -136,7 +156,12 @@ chip(d,W/2,580,"ON-CHAIN LIQUIDITY",WHITE,40)
 im.save(f"{OUT}/s7.png")
 
 # ---- 08 end ----
-im=bgfile("dash.png",.93)
+im=bgfile("dash.png",dark=.26,blur=2,scrim=False)
+# central scrim behind wordmark/tagline only (keep dashboard visible around)
+_g=Image.new("L",(W,H),0); _gd=ImageDraw.Draw(_g)
+_gd.rounded_rectangle([360,300,1560,880],radius=40,fill=200)
+_g=_g.filter(ImageFilter.GaussianBlur(90))
+im=Image.composite(Image.new("RGB",(W,H),(5,6,12)),im,_g)
 d=ImageDraw.Draw(im,"RGBA"); progress(d,1.0)
 # wordmark
 wf=F(IMPACT,104)
